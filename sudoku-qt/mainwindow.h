@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QLineEdit>
 
 namespace Ui {
 class MainWindow;
@@ -16,10 +17,14 @@ public:
     ~MainWindow();
 
 private slots:
-    void slot11changed(QString text);
+    void fieldChanged(QString text);
 
 private:
     Ui::MainWindow *ui;
+
+    void createLayout();
+
+    QLineEdit *fields[10][10];
 };
 
 #endif // MAINWINDOW_H
