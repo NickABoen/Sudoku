@@ -73,6 +73,9 @@
       <height>551</height>
      </rect>
     </property>
+    <property name="lineWidth">
+     <number>3</number>
+    </property>
     <property name="orientation">
      <enum>Qt::Vertical</enum>
     </property>
@@ -85,6 +88,9 @@
       <width>20</width>
       <height>551</height>
      </rect>
+    </property>
+    <property name="lineWidth">
+     <number>3</number>
     </property>
     <property name="orientation">
      <enum>Qt::Vertical</enum>
@@ -99,6 +105,15 @@
       <height>20</height>
      </rect>
     </property>
+    <property name="font">
+     <font>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="lineWidth">
+     <number>3</number>
+    </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
     </property>
@@ -111,6 +126,9 @@
       <width>711</width>
       <height>20</height>
      </rect>
+    </property>
+    <property name="lineWidth">
+     <number>3</number>
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
