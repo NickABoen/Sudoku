@@ -45,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
             //Creating and formatting each QLineEdit field.
             fields[i][j] = new QLineEdit(" ",this);
+            fields[i][j]->setInputMask("D");
             fields[i][j]->setObjectName(QString::number(i) + "_" + QString::number(j));
             fields[i][j]->setFixedHeight(31);
             fields[i][j]->setFixedWidth(41);
