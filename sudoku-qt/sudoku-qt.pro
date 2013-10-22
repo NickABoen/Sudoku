@@ -4,17 +4,23 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = sudoku-qt
 TEMPLATE = app
 
+SOURCES += main.cpp
 
-SOURCES += main.cpp\
-        mainwindow.cpp
+include(Model/Model.pri)
+include(View/View.pri)
+include(Controller/Controller.pri)
 
-HEADERS  += mainwindow.h
+INCLUDEPATH += $$PWD/Model\
+               $$PWD/View\
+               $$PWD/Controller
 
-FORMS    += mainwindow.ui
+DEPENDPATH += $$PWD/Model\
+              $$PWD/View\
+              $$PWD/Controller

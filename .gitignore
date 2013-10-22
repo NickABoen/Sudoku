@@ -14,3 +14,6 @@
 
 #QT build file
 build*
+*.pro.user
+*.pro.user.*
+
