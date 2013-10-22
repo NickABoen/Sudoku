@@ -59,6 +59,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    //buttons are deleted when ui is deleted since it is parent, see Qt documentation
     delete ui;
 }
 
