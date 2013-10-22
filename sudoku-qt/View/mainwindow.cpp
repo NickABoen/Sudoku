@@ -45,11 +45,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
             //Creating and formatting each QLineEdit field.
             fields[i][j] = new QLineEdit();
-
             QValidator *val = new QIntValidator(1,9,fields[i][j]);
             fields[i][j]->setValidator(val);
-
-//            fields[i][j]->setInputMask("D");
             fields[i][j]->setObjectName(QString::number(i) + "_" + QString::number(j));
             fields[i][j]->setFixedHeight(31);
             fields[i][j]->setFixedWidth(41);
