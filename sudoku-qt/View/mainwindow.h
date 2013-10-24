@@ -27,13 +27,14 @@ namespace View {
         void onSaveProgressPressed();
         void onLoadPuzzlePressed();
         void onSavePuzzlePressed();
-        void onMakeMove(QString text);
+        void onMakeMove(int *moveArray);
         void onUndoPressed();
         void onRedoPressed();
 
     private:
         Ui::MainWindow *ui;
 
+        int * createMoveArray(QString text, QString fieldname);
         void createLayout();
         void createMenu();
 

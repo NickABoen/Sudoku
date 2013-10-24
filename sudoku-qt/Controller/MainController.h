@@ -33,7 +33,7 @@ namespace Controller{
         void onSaveProgress();
         void onLoadPuzzle();
         void onSavePuzzle();
-        void onMakeMove(QString text); //Replace with tuple or something later
+        void onMakeMove(int *moveArray);
         void onUndoMove();
         void onRedoMove();
 

@@ -22,7 +22,7 @@ MainController::MainController(): QObject(NULL),
     connect(&view, SIGNAL(onLoadPuzzlePressed()), this, SLOT(onLoadPuzzle()));
     connect(&view, SIGNAL(onSaveProgressPressed()), this, SLOT(onSaveProgress()));
     connect(&view, SIGNAL(onLoadProgressPressed()), this, SLOT(onLoadProgress()));
-    connect(&view, SIGNAL(onMakeMove(QString)), this, SLOT(onMakeMove(QString)));
+    connect(&view, SIGNAL(onMakeMove(int*)), this, SLOT(onMakeMove(int*)));
 
     //Show MainWindow
     view.show();
@@ -84,9 +84,14 @@ void MainController::onSavePuzzle(){
     }
 }
 
-void MainController::onMakeMove(QString text){
+void MainController::onMakeMove(int* moveArray){
     //TODO
-    qDebug(text.toLatin1());
+    qDebug("Value:");
+    qDebug(QString::number(moveArray[0]).toLatin1());
+    qDebug("Row:");
+    qDebug(QString::number(moveArray[1]).toLatin1());
+    qDebug("Column:");
+    qDebug(QString::number(moveArray[2]).toLatin1());
 }
 
 

@@ -42,9 +42,19 @@ void MainWindow::fieldChanged(QString text)
     //Will eventually parse the object name '1_1' (row 1, col 1) into a position array,
     //and pass the position and values to the Controller, for now just update label to display Value/Field.
     QLineEdit *field = (QLineEdit *)sender();
-    emit onMakeMove(QString("Value: " + text + " Field: " + field->objectName()));
+    int *moveArray;
+    moveArray = createMoveArray(text, field->objectName());
+    emit onMakeMove(moveArray);
 }
 
+int * MainWindow::createMoveArray(QString text, QString fieldname) {
+    static int loc[3];
+    QStringList pieces = fieldname.split("_");
+    loc[0] = text.toInt();
+    loc[1] = pieces.value(0).toInt();
+    loc[2] = pieces.value(1).toInt();
+    return loc;
+}
 
 void MainWindow::createLayout()
 {
