@@ -10,35 +10,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    undoButton = new QPushButton(this);
-    undoButton->setText("Undo");
-    undoButton->move(50, 600);
-    connect(undoButton, SIGNAL(clicked()), this, SIGNAL(onUndo()));
-
-    redoButton = new QPushButton(this);
-    redoButton->setText("Redo");
-    redoButton->move(150, 600);
-    connect(redoButton, SIGNAL(clicked()), this, SIGNAL(onRedo()));
-
-    loadPuzzleButton = new QPushButton(this);
-    loadPuzzleButton->setText("Load Puzzle");
-    loadPuzzleButton->move(250, 600);
-    connect(loadPuzzleButton, SIGNAL(clicked()), this, SIGNAL(onLoadPuzzlePressed()));
-
-    savePuzzleButton = new QPushButton(this);
-    savePuzzleButton->setText("Save Puzzle");
-    savePuzzleButton->move(350, 600);
-    connect(savePuzzleButton, SIGNAL(clicked()), this, SIGNAL(onSavePuzzlePressed()));
-
-    loadProgressButton = new QPushButton(this);
-    loadProgressButton->setText("Load Progress");
-    loadProgressButton->move(450, 600);
-    connect(loadProgressButton, SIGNAL(clicked()), this, SIGNAL(onLoadProgressPressed()));
-
-    saveProgressButton = new QPushButton(this);
-    saveProgressButton->setText("Save Progress");
-    saveProgressButton->move(550, 600);
-    connect(saveProgressButton, SIGNAL(clicked()), this, SIGNAL(onSaveProgressPressed()));
+    createMenu();
 
     for (int i = 1; i < 10; i++) {
         for (int j = 1; j < 10; j++) {
@@ -48,8 +20,8 @@ MainWindow::MainWindow(QWidget *parent) :
             QValidator *val = new QIntValidator(1,9,fields[i][j]);
             fields[i][j]->setValidator(val);
             fields[i][j]->setObjectName(QString::number(i) + "_" + QString::number(j));
-            fields[i][j]->setFixedHeight(31);
-            fields[i][j]->setFixedWidth(41);
+            fields[i][j]->setFixedHeight(51);
+            fields[i][j]->setFixedWidth(61);
             fields[i][j]->setAlignment(Qt::AlignCenter);
             fields[i][j]->setStyleSheet("font: 18pt;");
 
@@ -84,5 +56,41 @@ void MainWindow::createLayout()
             ui->gridLayout->addWidget(fields[i][j], i, j);
 
         }
+    }
+}
+
+void MainWindow::createMenu()
+{
+    QMenu *fileMenu = ui->menuBar->addMenu("File");
+    {
+        QAction *loadPuzzleAction = fileMenu->addAction("Load Puzzle");
+        connect(loadPuzzleAction, SIGNAL(triggered()), this, SIGNAL(onLoadPuzzlePressed()));
+
+        QAction *savePuzzleAction = fileMenu->addAction("Save Puzzle");
+        connect(savePuzzleAction, SIGNAL(triggered()), this, SIGNAL(onSavePuzzlePressed()));
+
+        QAction *loadProgressAction = fileMenu->addAction("Load Progress");
+        connect(loadProgressAction, SIGNAL(triggered()), this, SIGNAL(onLoadProgressPressed()));
+
+        QAction *saveProgressAction = fileMenu->addAction("Save Progress");
+        connect(saveProgressAction, SIGNAL(triggered()), this, SIGNAL(onSaveProgressPressed()));
+
+        QAction *exitAction = fileMenu->addAction("Exit");
+        connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
+    }
+
+    QMenu *editMenu = ui->menuBar->addMenu("Edit");
+    {
+        QAction *undoAction = editMenu->addAction("Undo");
+        connect(undoAction, SIGNAL(triggered()), this, SIGNAL(onUndoPressed()));
+
+        QAction *redoAction = editMenu->addAction("Redo");
+        connect(redoAction, SIGNAL(triggered()), this, SIGNAL(onRedoPressed()));
+    }
+
+    QMenu *settingsMenu = ui->menuBar->addMenu("Settings");
+    {
+        QAction *settingsAction = settingsMenu->addAction("Settings");
+        //TODO
     }
 }

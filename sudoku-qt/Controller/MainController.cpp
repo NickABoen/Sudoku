@@ -3,6 +3,7 @@
 #include "Puzzle.h"
 
 #include <QDebug>
+#include <QFileDialog>
 
 using namespace Controller;
 
@@ -15,8 +16,8 @@ MainController::MainController(): QObject(NULL),
     redo()
 {
     //Connect all signals and slots
-    connect(&view, SIGNAL(onUndo()), this, SLOT(onUndoMove()));
-    connect(&view, SIGNAL(onRedo()), this, SLOT(onRedoMove()));
+    connect(&view, SIGNAL(onUndoPressed()), this, SLOT(onUndoMove()));
+    connect(&view, SIGNAL(onRedoPressed()), this, SLOT(onRedoMove()));
     connect(&view, SIGNAL(onSavePuzzlePressed()), this, SLOT(onSavePuzzle()));
     connect(&view, SIGNAL(onLoadPuzzlePressed()), this, SLOT(onLoadPuzzle()));
     connect(&view, SIGNAL(onSaveProgressPressed()), this, SLOT(onSaveProgress()));
@@ -34,21 +35,53 @@ MainController::~MainController(){
 void MainController::onLoadProgress(){
     //TODO
     qDebug("LOAD PROGRESS PRESSED");
+    QString filePath;
+    QFileDialog* fileDialog = new QFileDialog(&view, "Load Progress", "/", "*.*");
+    if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first(); //If user specifies more than one file only take first??
+    if(filePath != "")
+    {
+        //currentProgressSerializer.deserialize(&Puzzle, filePath);
+        qDebug(filePath.toLatin1());
+    }
 }
 
 void MainController::onSaveProgress(){
     //TODO
     qDebug("SAVE PROGRESS PRESSED");
+    QString filePath;
+    QFileDialog* fileDialog = new QFileDialog(&view, "Save Progress", "/", "*.*");
+    if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first(); //If user specifies more than one file only take first??
+    if(filePath != "")
+    {
+        //currentProgressSerializer.serialize(&Puzzle, filePath);
+        qDebug(filePath.toLatin1());
+    }
 }
 
 void MainController::onLoadPuzzle(){
     //TODO
     qDebug("LOAD PUZZLE PRESSED");
+    QString filePath;
+    QFileDialog* fileDialog = new QFileDialog(&view, "Load Puzzle", "/", "*.*");
+    if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first(); //If user specifies more than one file only take first??
+    if(filePath != "")
+    {
+        //puzzleSerializer.deserialize(&Puzzle, filePath);
+        qDebug(filePath.toLatin1());
+    }
 }
 
 void MainController::onSavePuzzle(){
     //TODO
     qDebug("SAVE PUZZLE PRESSED");
+    QString filePath;
+    QFileDialog* fileDialog = new QFileDialog(&view, "Save Puzzle", "/", "*.*");
+    if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first(); //If user specifies more than one file only take first??
+    if(filePath != "")
+    {
+        //puzzleSerializer.serialize(&Puzzle, filePath);
+        qDebug(filePath.toLatin1());
+    }
 }
 
 void MainController::onMakeMove(QString text){

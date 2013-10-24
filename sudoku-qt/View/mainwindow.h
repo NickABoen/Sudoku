@@ -28,13 +28,14 @@ namespace View {
         void onLoadPuzzlePressed();
         void onSavePuzzlePressed();
         void onMakeMove(QString text);
-        void onUndo();
-        void onRedo();
+        void onUndoPressed();
+        void onRedoPressed();
 
     private:
         Ui::MainWindow *ui;
 
         void createLayout();
+        void createMenu();
 
         QLineEdit *fields[10][10];
 
