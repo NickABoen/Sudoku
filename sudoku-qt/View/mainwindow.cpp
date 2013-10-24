@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
             fields[i][j]->setFixedHeight(60);
             fields[i][j]->setFixedWidth(75);
             fields[i][j]->setAlignment(Qt::AlignCenter);
-            fields[i][j]->setStyleSheet("font: 18pt;");
+            fields[i][j]->setStyleSheet("font: 28pt;");
 
             connect(fields[i][j], SIGNAL(textChanged(QString)),this,SLOT(fieldChanged(QString)));
         }
