@@ -20,8 +20,8 @@ MainWindow::MainWindow(QWidget *parent) :
             QValidator *val = new QIntValidator(1,9,fields[i][j]);
             fields[i][j]->setValidator(val);
             fields[i][j]->setObjectName(QString::number(i) + "_" + QString::number(j));
-            fields[i][j]->setFixedHeight(51);
-            fields[i][j]->setFixedWidth(61);
+            fields[i][j]->setFixedHeight(60);
+            fields[i][j]->setFixedWidth(75);
             fields[i][j]->setAlignment(Qt::AlignCenter);
             fields[i][j]->setStyleSheet("font: 18pt;");
 
