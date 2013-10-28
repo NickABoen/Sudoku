@@ -21,7 +21,7 @@ namespace Controller{
         MainController();
         ~MainController();
 
-        Model::Puzzle puzzle;
+        Model::Puzzle* puzzle;
         Model::CurrentProgressSerializer currentProgressSerializer;
         Model::PuzzleSerializer puzzleSerializer;
         View::MainWindow view;

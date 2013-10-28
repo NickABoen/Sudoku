@@ -40,8 +40,8 @@ void MainController::onLoadProgress(){
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first(); //If user specifies more than one file only take first??
     if(filePath != "")
     {
-        //currentProgressSerializer.deserialize(&Puzzle, filePath);
         qDebug(filePath.toLatin1());
+        puzzle->currentBoard = currentProgressSerializer.deserialize(filePath);
     }
 }
 
@@ -53,8 +53,8 @@ void MainController::onSaveProgress(){
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first(); //If user specifies more than one file only take first??
     if(filePath != "")
     {
-        //currentProgressSerializer.serialize(&Puzzle, filePath);
         qDebug(filePath.toLatin1());
+        currentProgressSerializer.serialize(puzzle, filePath);
     }
 }
 
@@ -66,8 +66,8 @@ void MainController::onLoadPuzzle(){
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first(); //If user specifies more than one file only take first??
     if(filePath != "")
     {
-        //puzzleSerializer.deserialize(&Puzzle, filePath);
         qDebug(filePath.toLatin1());
+        puzzle = puzzleSerializer.deserialize(filePath);
     }
 }
 
@@ -79,8 +79,8 @@ void MainController::onSavePuzzle(){
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first(); //If user specifies more than one file only take first??
     if(filePath != "")
     {
-        //puzzleSerializer.serialize(&Puzzle, filePath);
         qDebug(filePath.toLatin1());
+        puzzleSerializer.serialize(puzzle, filePath);
     }
 }
 

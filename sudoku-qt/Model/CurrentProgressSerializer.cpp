@@ -10,10 +10,13 @@ CurrentProgressSerializer::~CurrentProgressSerializer(){
     //TODO
 }
 
-void CurrentProgressSerializer::serialize(Puzzle& puzzle, QString filePath){
+void CurrentProgressSerializer::serialize(Puzzle* puzzle, QString filePath){
     //TODO
+    qDebug("Serializing current progress...");
 }
 
-void CurrentProgressSerializer::deserialize(Puzzle* puzsle,QString filePath){
+int** CurrentProgressSerializer::deserialize(QString filePath){
     //TODO
+    qDebug("Deserializing current progress...");
+    return NULL;
 }

@@ -12,8 +12,8 @@ namespace Model{
     public:
         CurrentProgressSerializer();
         ~CurrentProgressSerializer();
-        void serialize(Puzzle& puzzle, QString filePath);
-        void deserialize(Puzzle* puzzle, QString filePath);
+        void serialize(Puzzle* puzzle, QString filePath);
+        int** deserialize(QString filePath);
     };
 
 }

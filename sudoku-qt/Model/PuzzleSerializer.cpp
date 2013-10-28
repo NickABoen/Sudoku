@@ -10,11 +10,14 @@ PuzzleSerializer::~PuzzleSerializer(){
     //TODO
 }
 
-void PuzzleSerializer::serialize(Puzzle &puzzle, QString filePath){
+void PuzzleSerializer::serialize(Puzzle* puzzle, QString filePath){
     //TODO
+    qDebug("Serializing puzzle...");
 }
 
-void PuzzleSerializer::deserialize(Puzzle *puzzle, QString filePath){
+Puzzle* PuzzleSerializer::deserialize(QString filePath){
     //TODO
+    qDebug("Deserializing puzzle...");
+    return NULL;
 }
 
