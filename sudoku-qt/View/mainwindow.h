@@ -18,6 +18,7 @@ namespace View {
     public:
         explicit MainWindow(QWidget *parent = 0);
         ~MainWindow();
+        void setDefaultMove(int *moveArray);
 
     private slots:
         void fieldChanged(QString text);

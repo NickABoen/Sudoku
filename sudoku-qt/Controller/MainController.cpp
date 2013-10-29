@@ -32,6 +32,17 @@ MainController::~MainController(){
     //TODO
 }
 
+void MainController::displayDefaultBoard(){
+    for(int i = 0; i < 10; i++){
+        for(int j = 0; j < 10; j++){
+            if(puzzle->defaultBoard[i][j] != 0){
+                int moveArray[3] = {i, j, puzzle->defaultBoard[i][j]};
+                view.setDefaultMove(moveArray);
+            }
+        }
+    }
+}
+
 void MainController::onLoadProgress(){
     //TODO
     qDebug("LOAD PROGRESS PRESSED");
@@ -68,6 +79,8 @@ void MainController::onLoadPuzzle(){
     {
         qDebug(filePath.toLatin1());
         puzzle = puzzleSerializer.deserialize(filePath);
+
+        displayDefaultBoard();
     }
 }
 

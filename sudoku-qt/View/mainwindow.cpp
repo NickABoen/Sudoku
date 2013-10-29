@@ -47,6 +47,15 @@ void MainWindow::fieldChanged(QString text)
     emit onMakeMove(moveArray);
 }
 
+void MainWindow::setDefaultMove(int* moveArray){
+    qDebug("Updating board...");
+    int x = moveArray[0];
+    int y = moveArray[1];
+    int value = moveArray[2];
+    fields[x][y]->setEnabled(false);
+    fields[x][y]->setText(QString::number(value));
+}
+
 int * MainWindow::createMoveArray(QString text, QString fieldname) {
     static int loc[3];
     QStringList pieces = fieldname.split("_");
