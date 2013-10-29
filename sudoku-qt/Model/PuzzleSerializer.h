@@ -2,6 +2,8 @@
 #define __PuzzleSerializer_h__
 
 #include<QString>
+#include<iostream>
+#include<fstream>
 
 #include"Puzzle.h"
 
