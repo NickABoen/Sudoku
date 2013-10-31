@@ -18,8 +18,8 @@ namespace Model{
         void makeMove(Move move);
 
         int** currentBoard;
+        int** defaultBoard;
         int** solvedBoard;
-        int** originalBoard;
     };
 
 }

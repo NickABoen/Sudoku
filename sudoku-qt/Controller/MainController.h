@@ -21,7 +21,9 @@ namespace Controller{
         MainController();
         ~MainController();
 
-        Model::Puzzle puzzle;
+        void displayDefaultBoard();
+
+        Model::Puzzle* puzzle;
         Model::CurrentProgressSerializer currentProgressSerializer;
         Model::PuzzleSerializer puzzleSerializer;
         View::MainWindow view;
@@ -36,6 +38,9 @@ namespace Controller{
         void onMakeMove(int *moveArray);
         void onUndoMove();
         void onRedoMove();
+
+    signals:
+        void setDefaultMove(int *moveArray);
 
     };
 

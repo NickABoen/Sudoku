@@ -18,6 +18,7 @@ namespace View {
     public:
         explicit MainWindow(QWidget *parent = 0);
         ~MainWindow();
+        void setDefaultMove(int *moveArray);
 
     private slots:
         void fieldChanged(QString text);
@@ -38,7 +39,7 @@ namespace View {
         void createLayout();
         void createMenu();
 
-        QLineEdit *fields[10][10];
+        QLineEdit *fields[9][9];
 
         QPushButton* undoButton;
         QPushButton* redoButton;

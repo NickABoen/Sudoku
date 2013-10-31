@@ -12,8 +12,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     createMenu();
 
-    for (int i = 1; i < 10; i++) {
-        for (int j = 1; j < 10; j++) {
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
 
             //Creating and formatting each QLineEdit field.
             fields[i][j] = new QLineEdit();
@@ -47,6 +47,15 @@ void MainWindow::fieldChanged(QString text)
     emit onMakeMove(moveArray);
 }
 
+void MainWindow::setDefaultMove(int* moveArray){
+    qDebug("Updating board...");
+    int x = moveArray[0];
+    int y = moveArray[1];
+    int value = moveArray[2];
+    fields[x][y]->setEnabled(false);
+    fields[x][y]->setText(QString::number(value));
+}
+
 int * MainWindow::createMoveArray(QString text, QString fieldname) {
     static int loc[3];
     QStringList pieces = fieldname.split("_");
@@ -61,10 +70,9 @@ void MainWindow::createLayout()
     ui->gridLayout->setMargin(6);
     ui->gridLayout->setSpacing(6);
 
-    for(int i = 1; i < 10; i++) {
-        for(int j = 1; j < 10; j++) {
+    for(int i = 0; i < 9; i++) {
+        for(int j = 0; j < 9; j++) {
             ui->gridLayout->addWidget(fields[i][j], i, j);
-
         }
     }
 }

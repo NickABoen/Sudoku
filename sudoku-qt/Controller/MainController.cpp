@@ -32,6 +32,17 @@ MainController::~MainController(){
     //TODO
 }
 
+void MainController::displayDefaultBoard(){
+    for(int i = 0; i < 9; i++){
+        for(int j = 0; j < 9; j++){
+            if(puzzle->defaultBoard[i][j] != 0){
+                int moveArray[3] = {i, j, puzzle->defaultBoard[i][j]};
+                view.setDefaultMove(moveArray);
+            }
+        }
+    }
+}
+
 void MainController::onLoadProgress(){
     //TODO
     qDebug("LOAD PROGRESS PRESSED");
@@ -40,8 +51,8 @@ void MainController::onLoadProgress(){
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first(); //If user specifies more than one file only take first??
     if(filePath != "")
     {
-        //currentProgressSerializer.deserialize(&Puzzle, filePath);
         qDebug(filePath.toLatin1());
+        puzzle->currentBoard = currentProgressSerializer.deserialize(filePath);
     }
 }
 
@@ -53,8 +64,8 @@ void MainController::onSaveProgress(){
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first(); //If user specifies more than one file only take first??
     if(filePath != "")
     {
-        //currentProgressSerializer.serialize(&Puzzle, filePath);
         qDebug(filePath.toLatin1());
+        currentProgressSerializer.serialize(puzzle, filePath);
     }
 }
 
@@ -66,8 +77,10 @@ void MainController::onLoadPuzzle(){
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first(); //If user specifies more than one file only take first??
     if(filePath != "")
     {
-        //puzzleSerializer.deserialize(&Puzzle, filePath);
         qDebug(filePath.toLatin1());
+        puzzle = puzzleSerializer.deserialize(filePath);
+
+        displayDefaultBoard();
     }
 }
 
@@ -79,8 +92,8 @@ void MainController::onSavePuzzle(){
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first(); //If user specifies more than one file only take first??
     if(filePath != "")
     {
-        //puzzleSerializer.serialize(&Puzzle, filePath);
         qDebug(filePath.toLatin1());
+        puzzleSerializer.serialize(puzzle, filePath);
     }
 }
 

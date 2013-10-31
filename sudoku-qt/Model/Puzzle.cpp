@@ -2,8 +2,17 @@
 
 using namespace Model;
 
-Puzzle::Puzzle(){
+Puzzle::Puzzle():
+    currentBoard(new int*[9]),
+    defaultBoard(new int*[9]),
+    solvedBoard(new int*[9])
+{
     //TODO
+    for(int i = 0; i < 9; ++i){
+        currentBoard[i] = new int[9];
+        defaultBoard[i] = new int[9];
+        solvedBoard[i] = new int[9];
+    }
 }
 
 Puzzle::~Puzzle(){
@@ -11,11 +20,15 @@ Puzzle::~Puzzle(){
 }
 
 bool Puzzle::checkCompleted(){
-    //TODO
+    for(int i = 0; i < 10; i++){
+        for(int j = 0; j < 10; j++){
+            if(currentBoard[i][j] != solvedBoard[i][j]) return false;
+        }
+    }
     return true;
 }
 
 void Puzzle::makeMove(Move move){
-    //TODO
+    currentBoard[move.x][move.y] = move.value;
 }
 
