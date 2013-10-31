@@ -33,8 +33,8 @@ MainController::~MainController(){
 }
 
 void MainController::displayDefaultBoard(){
-    for(int i = 0; i < 10; i++){
-        for(int j = 0; j < 10; j++){
+    for(int i = 0; i < 9; i++){
+        for(int j = 0; j < 9; j++){
             if(puzzle->defaultBoard[i][j] != 0){
                 int moveArray[3] = {i, j, puzzle->defaultBoard[i][j]};
                 view.setDefaultMove(moveArray);

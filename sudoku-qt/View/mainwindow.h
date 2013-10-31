@@ -39,7 +39,7 @@ namespace View {
         void createLayout();
         void createMenu();
 
-        QLineEdit *fields[10][10];
+        QLineEdit *fields[9][9];
 
         QPushButton* undoButton;
         QPushButton* redoButton;

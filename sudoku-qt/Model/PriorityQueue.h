@@ -7,14 +7,14 @@ using namespace std;
 class PriorityQueue{
 private:
     QPair<qint, Move> *elements;
-    qint count;
+    int count;
     QMap<Move, qint> location;
     void SiftUp(qint);
     void SiftDown(qint);
     void Swap(qint,qint);
 public:
-    qint GetCount(void);
-    qint MaxPriority(void);
+    int GetCount(void);
+    int MaxPriority(void);
     PriorityQueue(qint);
     void Add(Move,qint);
     Move RemoveMax(void);

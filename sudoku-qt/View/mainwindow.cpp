@@ -12,8 +12,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     createMenu();
 
-    for (int i = 1; i < 10; i++) {
-        for (int j = 1; j < 10; j++) {
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
 
             //Creating and formatting each QLineEdit field.
             fields[i][j] = new QLineEdit();
@@ -70,10 +70,9 @@ void MainWindow::createLayout()
     ui->gridLayout->setMargin(6);
     ui->gridLayout->setSpacing(6);
 
-    for(int i = 1; i < 10; i++) {
-        for(int j = 1; j < 10; j++) {
+    for(int i = 0; i < 9; i++) {
+        for(int j = 0; j < 9; j++) {
             ui->gridLayout->addWidget(fields[i][j], i, j);
-
         }
     }
 }

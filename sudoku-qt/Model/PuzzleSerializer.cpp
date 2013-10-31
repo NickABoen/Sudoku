@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 
 #include "PuzzleSerializer.h"
 
@@ -19,14 +20,14 @@ void PuzzleSerializer::serialize(Puzzle* puzzle, QString filePath){
     file.open(filePath.toStdString());
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
-            file << QString::number(puzzle->defaultBoard[i][j]).toStdString() + ", ";
+            file << puzzle->defaultBoard[i][j] << ",";
         }
         file << "\n";
     }
     file << "\n";
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
-            file << QString::number(puzzle->solvedBoard[i][j]).toStdString() + ", ";
+            file << puzzle->solvedBoard[i][j] << ",";
         }
         file << "\n";
     }
@@ -37,6 +38,26 @@ Puzzle* PuzzleSerializer::deserialize(QString filePath){
     //TODO
     qDebug("Deserializing puzzle...");
     Puzzle *puzzle = new Puzzle();
+
+    std::ifstream file(filePath.toStdString());
+
+    char comma;
+
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+            file >> puzzle->defaultBoard[i][j] >> comma;
+        }
+        file.ignore();
+    }
+    file.ignore();
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+            file >> puzzle->solvedBoard[i][j] >> comma;
+        }
+        file.ignore();
+    }
+
+    file.close();
 
     return puzzle;
 }

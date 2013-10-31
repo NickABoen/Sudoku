@@ -3,11 +3,16 @@
 using namespace Model;
 
 Puzzle::Puzzle():
-    currentBoard(NULL),
-    defaultBoard(NULL),
-    solvedBoard(NULL)
+    currentBoard(new int*[9]),
+    defaultBoard(new int*[9]),
+    solvedBoard(new int*[9])
 {
     //TODO
+    for(int i = 0; i < 9; ++i){
+        currentBoard[i] = new int[9];
+        defaultBoard[i] = new int[9];
+        solvedBoard[i] = new int[9];
+    }
 }
 
 Puzzle::~Puzzle(){
