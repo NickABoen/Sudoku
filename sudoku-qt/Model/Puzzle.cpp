@@ -12,7 +12,16 @@ Puzzle::Puzzle():
         currentBoard[i] = new int[9];
         defaultBoard[i] = new int[9];
         solvedBoard[i] = new int[9];
+
+        for(int j = 0; j < 9; j++)
+        {
+            currentBoard[i][j] = 0;
+            defaultBoard[i][j] = 0;
+            solvedBoard[i][j] = 0;
+        }
     }
+
+    qDebug("Current Board [0][0] = " + QString::number(currentBoard[0][0]).toLatin1());
 }
 
 Puzzle::~Puzzle(){

@@ -81,6 +81,8 @@ void MainController::onLoadPuzzle(){
         puzzle = puzzleSerializer.deserialize(filePath);
 
         displayDefaultBoard();
+        undo.clear();
+        redo.clear();
     }
 }
 
@@ -99,21 +101,46 @@ void MainController::onSavePuzzle(){
 
 void MainController::onMakeMove(int* moveArray){
     //TODO
-    qDebug("Value:");
-    qDebug(QString::number(moveArray[0]).toLatin1());
-    qDebug("Row:");
-    qDebug(QString::number(moveArray[1]).toLatin1());
-    qDebug("Column:");
-    qDebug(QString::number(moveArray[2]).toLatin1());
+    Model::Move* oldMove = GetMoveOfCurrentPuzzle(moveArray[1], moveArray[2]);
+    undo.push(*oldMove);
 }
 
 
 void MainController::onUndoMove(){
     //TODO
     qDebug("UNDO PRESSED");
+
+    if(undo.size() > 0)
+    {
+        Model::Move undoMove = undo.pop();
+        Model::Move* redoMove = GetMoveOfCurrentPuzzle(undoMove.x, undoMove.y);
+        puzzle->makeMove(undoMove);
+        redo.push(*redoMove);
+    }
 }
 
 void MainController::onRedoMove(){
     //TODO
     qDebug("REDO PRESSED");
+
+    if(redo.size() > 0)
+    {
+        Model::Move redoMove = redo.pop();
+        Model::Move* undoMove = GetMoveOfCurrentPuzzle(redoMove.x, redoMove.y);
+        puzzle->makeMove(redoMove);
+        undo.push(*undoMove);
+    }
+}
+
+Model::Move* MainController::GetMoveOfCurrentPuzzle(int x, int y){
+    Model::Move* returnMove = new Model::Move();
+
+    returnMove->x = x;
+    returnMove->y = y;
+
+    returnMove->value = puzzle->currentBoard[x][y];
+
+    qDebug("New Move: ["+QString::number(returnMove->x).toLatin1()+", "+QString::number(returnMove->y).toLatin1()+"] = "+QString::number(returnMove->value).toLatin1());
+
+    return returnMove;
 }

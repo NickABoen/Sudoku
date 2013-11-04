@@ -42,6 +42,9 @@ namespace Controller{
     signals:
         void setDefaultMove(int *moveArray);
 
+    private:
+        Model::Move* GetMoveOfCurrentPuzzle(int x, int y);
+
     };
 
 }
