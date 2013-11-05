@@ -14,8 +14,7 @@ PuzzleSerializer::~PuzzleSerializer(){
 }
 
 void PuzzleSerializer::serialize(Puzzle* puzzle, QString filePath){
-    //TODO
-    qDebug("Serializing puzzle...");
+
     std::ofstream file;
     file.open(filePath.toLatin1());
     for (int i = 0; i < 9; i++) {
@@ -35,8 +34,7 @@ void PuzzleSerializer::serialize(Puzzle* puzzle, QString filePath){
 }
 
 Puzzle* PuzzleSerializer::deserialize(QString filePath){
-    //TODO
-    qDebug("Deserializing puzzle...");
+
     Puzzle *puzzle = new Puzzle();
 
     std::ifstream file(filePath.toLatin1());

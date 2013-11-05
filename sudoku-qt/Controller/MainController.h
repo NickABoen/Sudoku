@@ -21,7 +21,8 @@ namespace Controller{
         MainController();
         ~MainController();
 
-        void displayDefaultBoard();
+        void displayBoard();
+        void clearBoard();
 
         Model::Puzzle* puzzle;
         Model::CurrentProgressSerializer currentProgressSerializer;

@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+
 #include <QDebug>
+
 
 using namespace View;
 
@@ -48,12 +50,20 @@ void MainWindow::fieldChanged(QString text)
 }
 
 void MainWindow::setDefaultMove(int* moveArray){
-    qDebug("Updating board...");
-    int x = moveArray[0];
-    int y = moveArray[1];
-    int value = moveArray[2];
+    int value = moveArray[0];
+    int x = moveArray[1];
+    int y = moveArray[2];
     fields[x][y]->setEnabled(false);
     fields[x][y]->setText(QString::number(value));
+}
+
+void MainWindow::clearBoard(){
+    for(int i = 0; i < 9; i++){
+        for(int j = 0; j < 9; j++){
+            fields[i][j]->setEnabled(true);
+            fields[i][j]->setText("");
+        }
+    }
 }
 
 int * MainWindow::createMoveArray(QString text, QString fieldname) {

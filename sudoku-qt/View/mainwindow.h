@@ -19,6 +19,7 @@ namespace View {
         explicit MainWindow(QWidget *parent = 0);
         ~MainWindow();
         void setDefaultMove(int *moveArray);
+        void clearBoard();
 
     private slots:
         void fieldChanged(QString text);

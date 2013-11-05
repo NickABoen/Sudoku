@@ -1,5 +1,7 @@
 #include "Puzzle.h"
 
+#include <QString>
+
 using namespace Model;
 
 Puzzle::Puzzle():
@@ -7,7 +9,6 @@ Puzzle::Puzzle():
     defaultBoard(new int*[9]),
     solvedBoard(new int*[9])
 {
-    //TODO
     for(int i = 0; i < 9; ++i){
         currentBoard[i] = new int[9];
         defaultBoard[i] = new int[9];
@@ -20,8 +21,8 @@ Puzzle::~Puzzle(){
 }
 
 bool Puzzle::checkCompleted(){
-    for(int i = 0; i < 10; i++){
-        for(int j = 0; j < 10; j++){
+    for(int i = 0; i < 9; i++){
+        for(int j = 0; j < 9; j++){
             if(currentBoard[i][j] != solvedBoard[i][j]) return false;
         }
     }
