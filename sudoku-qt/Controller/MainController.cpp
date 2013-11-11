@@ -57,8 +57,9 @@ void MainController::onLoadProgress(){
     if(filePath != "")
     {
         qDebug(filePath.toLatin1());
-        currentProgressSerializer.deserialize(puzzle, filePath);
+        currentProgressSerializer.deserialize(undo, puzzle, filePath);
     }
+    displayBoard();
 }
 
 void MainController::onSaveProgress(){
@@ -70,7 +71,7 @@ void MainController::onSaveProgress(){
     if(filePath != "")
     {
         qDebug(filePath.toLatin1());
-        currentProgressSerializer.serialize(puzzle, filePath);
+        currentProgressSerializer.serialize(undo, puzzle, filePath);
     }
 }
 

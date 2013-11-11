@@ -2,8 +2,14 @@
 
 using namespace Model;
 
-Move::Move(){
-    //TODO
+Move::Move() {
+
+}
+
+Move::Move(int x, int y, int value) {
+    this->x = x;
+    this->y = y;
+    this->value = value;
 }
 
 Move::~Move(){
