@@ -52,21 +52,21 @@ void MainController::displayBoard(){
 void MainController::onLoadProgress(){
 
     QString filePath;
-    QFileDialog* fileDialog = new QFileDialog(&view, "Load Progress", "/", "*.*");
+    QFileDialog* fileDialog = new QFileDialog(&view, "Load Progress", "", "*.*");
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first();
     if(filePath != "")
     {
         qDebug(filePath.toLatin1());
-        puzzle->currentBoard = currentProgressSerializer.deserialize(filePath);
+        currentProgressSerializer.deserialize(puzzle, filePath);
     }
 }
 
 void MainController::onSaveProgress(){
 
     QString filePath;
-    QFileDialog* fileDialog = new QFileDialog(&view, "Save Progress", "/", "*.*");
+    QFileDialog* fileDialog = new QFileDialog();
+    filePath = fileDialog->getSaveFileName(&view, "Save file", "", "*.*");
 
-    if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first(); //If user specifies more than one file only take first??
     if(filePath != "")
     {
         qDebug(filePath.toLatin1());
@@ -77,7 +77,7 @@ void MainController::onSaveProgress(){
 void MainController::onLoadPuzzle(){
 
     QString filePath;
-    QFileDialog* fileDialog = new QFileDialog(&view, "Load Puzzle", "/", "*.*");
+    QFileDialog* fileDialog = new QFileDialog(&view, "Load Puzzle", "", "*.*");
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first(); //If user specifies more than one file only take first??
     if(filePath != "")
     {
@@ -118,8 +118,9 @@ void MainController::onLoadPuzzle(){
 void MainController::onSavePuzzle(){
 
     QString filePath;
-    QFileDialog* fileDialog = new QFileDialog(&view, "Save Puzzle", "/", "*.*");
-    if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first(); //If user specifies more than one file only take first??
+    QFileDialog* fileDialog = new QFileDialog();
+    filePath = fileDialog->getSaveFileName(&view, "Save file", "", "*.*");
+
     if(filePath != "")
     {
         qDebug(filePath.toLatin1());

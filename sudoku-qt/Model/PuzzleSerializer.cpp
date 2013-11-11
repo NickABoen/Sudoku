@@ -13,8 +13,8 @@ PuzzleSerializer::~PuzzleSerializer(){
     //TODO
 }
 
-void PuzzleSerializer::serialize(Puzzle* puzzle, QString filePath){
-
+void PuzzleSerializer::serialize(Puzzle* puzzle, QString filePath)
+{
     std::ofstream file;
     file.open(filePath.toLatin1());
     for (int i = 0; i < 9; i++) {
