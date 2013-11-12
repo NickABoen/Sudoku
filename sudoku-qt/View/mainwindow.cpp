@@ -12,25 +12,45 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    createMenu();
-
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
 
             //Creating and formatting each QLineEdit field.
-            fields[i][j] = new QLineEdit();
-            QValidator *val = new QIntValidator(1,9,fields[i][j]);
-            fields[i][j]->setValidator(val);
-            fields[i][j]->setObjectName(QString::number(i) + "_" + QString::number(j));
-            fields[i][j]->setFixedHeight(60);
-            fields[i][j]->setFixedWidth(75);
-            fields[i][j]->setAlignment(Qt::AlignCenter);
-            fields[i][j]->setStyleSheet("font: 28pt;");
+            fields[i][j] = new QLineEdit(ui->centralWidget);
+            QLineEdit *field = fields[i][j];
+            QValidator *val = new QIntValidator(1,9,field);
+            field->setValidator(val);
+            field->setObjectName(QString::number(i) + "_" + QString::number(j));
+            field->setGeometry(i*60 + i/3*4, j*60 + j/3*4, 60, 60);
+            field->setAlignment(Qt::AlignCenter);
+            field->setStyleSheet("font: 28pt;");
 
-            connect(fields[i][j], SIGNAL(textChanged(QString)),this,SLOT(fieldChanged(QString)));
+            connect(field, SIGNAL(textChanged(QString)),this,SLOT(fieldChanged(QString)));
+
         }
     }
-    createLayout();
+
+    QFrame *line0 = new QFrame(ui->centralWidget);
+    line0->setFrameShape(QFrame::HLine);
+    line0->setGeometry(0, 3*60, 60*9+8, 4);
+    line0->setLineWidth(4);
+
+    QFrame *line1 = new QFrame(ui->centralWidget);
+    line1->setFrameShape(QFrame::HLine);
+    line1->setGeometry(0, 6*60+4, 60*9+8, 4);
+    line1->setLineWidth(4);
+
+    QFrame *line2 = new QFrame(ui->centralWidget);
+    line2->setFrameShape(QFrame::VLine);
+    line2->setGeometry(3*60, 0, 4, 60*9+8);
+    line2->setLineWidth(4);
+
+    QFrame *line3 = new QFrame(ui->centralWidget);
+    line3->setFrameShape(QFrame::VLine);
+    line3->setGeometry(6*60+4, 0, 4, 60*9+8);
+    line3->setLineWidth(4);
+
+    createMenu();
 }
 
 MainWindow::~MainWindow()
@@ -75,17 +95,6 @@ int * MainWindow::createMoveArray(QString text, QString fieldname) {
     return loc;
 }
 
-void MainWindow::createLayout()
-{
-    ui->gridLayout->setMargin(6);
-    ui->gridLayout->setSpacing(6);
-
-    for(int i = 0; i < 9; i++) {
-        for(int j = 0; j < 9; j++) {
-            ui->gridLayout->addWidget(fields[i][j], i, j);
-        }
-    }
-}
 
 void MainWindow::createMenu()
 {
@@ -110,9 +119,11 @@ void MainWindow::createMenu()
     QMenu *editMenu = ui->menuBar->addMenu("Edit");
     {
         QAction *undoAction = editMenu->addAction("Undo");
+        undoAction->setEnabled(false);
         connect(undoAction, SIGNAL(triggered()), this, SIGNAL(onUndoPressed()));
 
         QAction *redoAction = editMenu->addAction("Redo");
+        redoAction->setEnabled(false);
         connect(redoAction, SIGNAL(triggered()), this, SIGNAL(onRedoPressed()));
     }
 

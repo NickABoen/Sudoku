@@ -37,7 +37,6 @@ namespace View {
         Ui::MainWindow *ui;
 
         int * createMoveArray(QString text, QString fieldname);
-        void createLayout();
         void createMenu();
 
         QLineEdit *fields[9][9];
