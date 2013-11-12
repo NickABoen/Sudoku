@@ -15,6 +15,6 @@ SOURCES += Model/CurrentProgressSerializer.cpp\
 HEADERS += Model/CurrentProgressSerializer.h\
            Model/Move.h\
            Model/Puzzle.h\
-           Model/PuzzleSerializer.h# \
+           Model/PuzzleSerializer.h # \
            #Model/BoardSolver.h \
            #Model/PriorityQueue.h
