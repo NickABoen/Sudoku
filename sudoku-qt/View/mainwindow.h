@@ -5,6 +5,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QString>
+#include <QAction>
 
 namespace Ui {
 class MainWindow;
@@ -19,7 +20,11 @@ namespace View {
         explicit MainWindow(QWidget *parent = 0);
         ~MainWindow();
         void setDefaultMove(int *moveArray);
+        void makeMove(int *moveArray);
         void clearBoard();
+
+        QAction *undoAction;
+        QAction *redoAction;
 
     private slots:
         void fieldChanged(QString text);
@@ -41,12 +46,8 @@ namespace View {
 
         QLineEdit *fields[9][9];
 
-        QPushButton* undoButton;
-        QPushButton* redoButton;
-        QPushButton* loadPuzzleButton;
-        QPushButton* savePuzzleButton;
-        QPushButton* loadProgressButton;
-        QPushButton* saveProgressButton;
+
+
 
     };
 }

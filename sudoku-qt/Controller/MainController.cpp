@@ -6,6 +6,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QAbstractButton>
+#include <QAction>
 
 using namespace Controller;
 
@@ -60,6 +61,8 @@ void MainController::onLoadProgress(){
         currentProgressSerializer.deserialize(undo, puzzle, filePath);
     }
     displayBoard();
+
+
 }
 
 void MainController::onSaveProgress(){
@@ -111,11 +114,14 @@ void MainController::onLoadPuzzle(){
         }
         puzzle = puzzleSerializer.deserialize(filePath);
 
+        displayBoard();
+        view.centralWidget()->setEnabled(true);
+
         undo.clear();
         redo.clear();
 
-        displayBoard();
-        view.centralWidget()->setEnabled(true);
+        view.undoAction->setEnabled(false);
+        view.redoAction->setEnabled(false);
     }
 }
 
@@ -127,19 +133,18 @@ void MainController::onSavePuzzle(){
 
     if(filePath != "")
     {
-        qDebug(filePath.toLatin1());
         puzzleSerializer.serialize(puzzle, filePath);
     }
 }
 
 void MainController::onMakeMove(int* moveArray){
 
-    Model::Move* oldMove = GetMoveOfCurrentPuzzle(moveArray[1], moveArray[2]);
-    undo.push(*oldMove);
-
     int value = moveArray[0];
     int x = moveArray[1];
     int y = moveArray[2];
+
+    undo.push(Model::Move( x, y, puzzle->currentBoard[x][y]));
+    view.undoAction->setEnabled(true);
 
     puzzle->currentBoard[x][y] = value;
     if(puzzle->checkCompleted()){
@@ -158,40 +163,38 @@ void MainController::onMakeMove(int* moveArray){
 
 
 void MainController::onUndoMove(){
-    //TODO
-    qDebug("UNDO PRESSED");
 
-    if(undo.size() > 0)
-    {
-        Model::Move undoMove = undo.pop();
-        Model::Move* redoMove = GetMoveOfCurrentPuzzle(undoMove.x, undoMove.y);
-        puzzle->makeMove(undoMove);
-        redo.push(*redoMove);
-    }
+    Model::Move undoMove = undo.pop();
+
+    int x = undoMove.x;
+    int y = undoMove.y;
+
+    redo.push(Model::Move(x, y, puzzle->currentBoard[x][y]));
+    view.redoAction->setEnabled(true);
+
+    int moveArray[3] = {undoMove.value, x, y};
+    view.makeMove(moveArray);
+    undo.pop();
+    if(undo.size() == 0) view.undoAction->setEnabled(false);
 }
 
 void MainController::onRedoMove(){
-    //TODO
-    qDebug("REDO PRESSED");
 
-    if(redo.size() > 0)
-    {
-        Model::Move redoMove = redo.pop();
-        Model::Move* undoMove = GetMoveOfCurrentPuzzle(redoMove.x, redoMove.y);
-        puzzle->makeMove(redoMove);
-        undo.push(*undoMove);
-    }
+    Model::Move redoMove = redo.pop();
+
+    int moveArray[3] = {redoMove.value, redoMove.x, redoMove.y};
+    view.makeMove(moveArray);
+    if(redo.size() == 0) view.redoAction->setEnabled(false);
+
+    //undo.push(redoMove);
+    view.undoAction->setEnabled(true);
 }
 
-Model::Move* MainController::GetMoveOfCurrentPuzzle(int x, int y){
-    Model::Move* returnMove = new Model::Move();
+Model::Move MainController::GetMoveOfCurrentPuzzle(int x, int y){
 
-    returnMove->x = x;
-    returnMove->y = y;
+    Model::Move returnMove(x, y, puzzle->currentBoard[x][y]);
 
-    returnMove->value = puzzle->currentBoard[x][y];
-
-    qDebug("New Move: ["+QString::number(returnMove->x).toLatin1()+", "+QString::number(returnMove->y).toLatin1()+"] = "+QString::number(returnMove->value).toLatin1());
+    qDebug("New Move: ["+QString::number(returnMove.x).toLatin1()+", "+QString::number(returnMove.y).toLatin1()+"] = "+QString::number(returnMove.value).toLatin1());
 
     return returnMove;
 }
