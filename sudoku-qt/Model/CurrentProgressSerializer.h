@@ -2,6 +2,9 @@
 #define __CurrentProgressSerializer_h__
 
 #include <QString>
+#include<iostream>
+#include<fstream>
+#include <QStack>
 
 #include "Puzzle.h"
 
@@ -12,8 +15,8 @@ namespace Model{
     public:
         CurrentProgressSerializer();
         ~CurrentProgressSerializer();
-        void serialize(Puzzle* puzzle, QString filePath);
-        int** deserialize(QString filePath);
+        void serialize(QStack<Model::Move> undo, Puzzle* puzzle, QString filePath);
+        void deserialize(QStack<Model::Move> undo, Puzzle* puzzle, QString filePath);
     };
 
 }

@@ -17,3 +17,4 @@ build*
 *.pro.user
 *.pro.user.*
 
+.DS_Store
