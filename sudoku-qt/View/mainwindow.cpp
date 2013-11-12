@@ -61,20 +61,26 @@ MainWindow::~MainWindow()
 
 void MainWindow::fieldChanged(QString text)
 {
-    //Will eventually parse the object name '1_1' (row 1, col 1) into a position array,
-    //and pass the position and values to the Controller, for now just update label to display Value/Field.
     QLineEdit *field = (QLineEdit *)sender();
-    int *moveArray;
-    moveArray = createMoveArray(text, field->objectName());
+    int *moveArray = createMoveArray(text, field->objectName());
     emit onMakeMove(moveArray);
 }
 
 void MainWindow::setDefaultMove(int* moveArray){
+    makeMove(moveArray);
+    fields[moveArray[1]][moveArray[2]]->setEnabled(false);
+}
+
+void MainWindow::makeMove(int* moveArray){
     int value = moveArray[0];
     int x = moveArray[1];
     int y = moveArray[2];
-    fields[x][y]->setEnabled(false);
-    fields[x][y]->setText(QString::number(value));
+    if(value > 0){
+        fields[x][y]->setText(QString::number(value));
+    }
+    else{
+        fields[x][y]->setText("");
+    }
 }
 
 void MainWindow::clearBoard(){
@@ -89,7 +95,14 @@ void MainWindow::clearBoard(){
 int * MainWindow::createMoveArray(QString text, QString fieldname) {
     static int loc[3];
     QStringList pieces = fieldname.split("_");
-    loc[0] = text.toInt();
+
+    qDebug(text.toLatin1());
+    if(text != ""){
+        loc[0] = text.toInt();
+    }
+    else{
+        loc[0] = 0;
+    }
     loc[1] = pieces.value(0).toInt();
     loc[2] = pieces.value(1).toInt();
     return loc;
@@ -118,11 +131,11 @@ void MainWindow::createMenu()
 
     QMenu *editMenu = ui->menuBar->addMenu("Edit");
     {
-        QAction *undoAction = editMenu->addAction("Undo");
+        undoAction = editMenu->addAction("Undo");
         undoAction->setEnabled(false);
         connect(undoAction, SIGNAL(triggered()), this, SIGNAL(onUndoPressed()));
 
-        QAction *redoAction = editMenu->addAction("Redo");
+        redoAction = editMenu->addAction("Redo");
         redoAction->setEnabled(false);
         connect(redoAction, SIGNAL(triggered()), this, SIGNAL(onRedoPressed()));
     }

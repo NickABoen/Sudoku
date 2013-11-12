@@ -44,7 +44,7 @@ namespace Controller{
         void setDefaultMove(int *moveArray);
 
     private:
-        Model::Move* GetMoveOfCurrentPuzzle(int x, int y);
+        Model::Move GetMoveOfCurrentPuzzle(int x, int y);
 
     };
 
