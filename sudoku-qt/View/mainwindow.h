@@ -18,7 +18,7 @@ namespace View {
     public:
         explicit MainWindow(QWidget *parent = 0);
         ~MainWindow();
-        void setDefaultMove(int *moveArray);
+        void setDefaultMove(int *moveArray, bool isCurrent);
         void clearBoard();
 
     private slots:

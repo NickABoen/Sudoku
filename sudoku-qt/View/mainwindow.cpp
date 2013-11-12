@@ -49,11 +49,11 @@ void MainWindow::fieldChanged(QString text)
     emit onMakeMove(moveArray);
 }
 
-void MainWindow::setDefaultMove(int* moveArray){
+void MainWindow::setDefaultMove(int* moveArray, bool isCurrent){
     int value = moveArray[0];
     int x = moveArray[1];
     int y = moveArray[2];
-    fields[x][y]->setEnabled(false);
+    fields[x][y]->setEnabled(isCurrent);
     fields[x][y]->setText(QString::number(value));
 }
 

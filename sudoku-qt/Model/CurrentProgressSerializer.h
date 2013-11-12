@@ -16,7 +16,7 @@ namespace Model{
         CurrentProgressSerializer();
         ~CurrentProgressSerializer();
         void serialize(QStack<Model::Move> undo, Puzzle* puzzle, QString filePath);
-        void deserialize(QStack<Model::Move> undo, Puzzle* puzzle, QString filePath);
+        Puzzle* deserialize(QStack<Model::Move> undo, QString filePath);
     };
 
 }

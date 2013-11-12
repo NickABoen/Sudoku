@@ -22,19 +22,16 @@ void CurrentProgressSerializer::serialize(QStack<Model::Move> undo, Puzzle* puzz
     qDebug("Serializing current progress...");
     std::ofstream file;
     file.open(filePath.toLatin1());
+
+    if (!puzzle->filePathRef.isEmpty()) {
+        //shouldn't be empty, but will fuck up either way if it is.
+        file << puzzle->filePathRef.toUtf8().constData();
+        file << "\n";
+    }
+
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
             file << puzzle->currentBoard[i][j] << ",";
-        }
-        file << "\n";
-    }
-    file << "\n";
-    for (int i = 0; i < 9; i++) {
-        for (int j = 0; j < 9; j++) {
-            //this needs to be not here....
-            //AND SOMEWHERE NEED TO SAVE THE REFERENCE (filepath) TO THE SOLVEDSTATE ORIGINAL PUZZLE
-            //preferably above
-            file << puzzle->solvedBoard[i][j] << ",";
         }
         file << "\n";
     }
@@ -50,24 +47,48 @@ void CurrentProgressSerializer::serialize(QStack<Model::Move> undo, Puzzle* puzz
     file.close();
 }
 
-void CurrentProgressSerializer::deserialize(QStack<Model::Move> undo, Puzzle* puzzle, QString filePath){
-    //TODO
+Puzzle* CurrentProgressSerializer::deserialize(QStack<Model::Move> undo, QString filePath){
     qDebug("Deserializing current progress...");
+    Puzzle* puzzle = new Puzzle();
 
-    std::ifstream file(filePath.toLatin1());
+    std::string refFilePath;
+    std::ifstream getRefFile(filePath.toLatin1());
+    getRefFile >> refFilePath;
+    getRefFile.close();
+    qDebug("Retrieved reference file path:");
+    QString qPath = QString::fromStdString(refFilePath);
+    qDebug(qPath.toLatin1());
 
     char comma;
+    qDebug("Setting Default and Solved");
+
+    std::ifstream oFile(qPath.toLatin1());
 
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
-            file >> puzzle->currentBoard[i][j] >> comma;
+            oFile >> puzzle->defaultBoard[i][j] >> comma;
         }
-        file.ignore();
+        oFile.ignore();
     }
+    oFile.ignore();
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+            oFile >> puzzle->solvedBoard[i][j] >> comma;
+        }
+        oFile.ignore();
+    }
+
+    oFile.close();
+
+    //Reopen original filepath, set current
+    qDebug("Reopening original to set current");
+
+    std::ifstream file(filePath.toLatin1());
+    file >> refFilePath;
     file.ignore();
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
-            file >> puzzle->solvedBoard[i][j] >> comma;
+            file >> puzzle->currentBoard[i][j] >> comma;
         }
         file.ignore();
     }
@@ -80,5 +101,8 @@ void CurrentProgressSerializer::deserialize(QStack<Model::Move> undo, Puzzle* pu
         undo.push_back(*mv);
     }
 
+    qDebug("Done.");
     file.close();
+    puzzle->filePathRef = qPath;
+    return puzzle;
 }
