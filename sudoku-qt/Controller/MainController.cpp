@@ -44,25 +44,34 @@ void MainController::displayBoard(){
         for(int j = 0; j < 9; j++){
             if(puzzle->defaultBoard[i][j] != 0){
                 int moveArray[3] = {puzzle->defaultBoard[i][j], i, j};
-                view.setDefaultMove(moveArray);
+                view.setMove(moveArray, false);
             }
         }
     }
 }
 
-void MainController::onLoadProgress(){
+void MainController::displayCurrentBoard(){
+    for(int i = 0; i < 9; i++){
+        for(int j = 0; j < 9; j++){
+            if(puzzle->currentBoard[i][j] != puzzle->defaultBoard[i][j]){
+                int moveArray[3] = {puzzle->currentBoard[i][j], i, j};
+                view.setMove(moveArray, true);
+            }
+        }
+    }
+}
 
+void MainController::onLoadProgress() {
     QString filePath;
     QFileDialog* fileDialog = new QFileDialog(&view, "Load Progress", "", "*.*");
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first();
     if(filePath != "")
     {
         qDebug(filePath.toLatin1());
-        currentProgressSerializer.deserialize(undo, puzzle, filePath);
+        puzzle = currentProgressSerializer.deserialize(undo, filePath);
     }
-    displayBoard();
-
-
+    displayCurrentBoard();
+    view.centralWidget()->setEnabled(true);
 }
 
 void MainController::onSaveProgress(){

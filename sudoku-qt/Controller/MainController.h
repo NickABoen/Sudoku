@@ -22,6 +22,7 @@ namespace Controller{
         ~MainController();
 
         void displayBoard();
+        void displayCurrentBoard();
         void clearBoard();
 
         Model::Puzzle* puzzle;

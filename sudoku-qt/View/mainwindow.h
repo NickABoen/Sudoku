@@ -19,8 +19,9 @@ namespace View {
     public:
         explicit MainWindow(QWidget *parent = 0);
         ~MainWindow();
-        void setDefaultMove(int *moveArray);
+
         void makeMove(int *moveArray);
+        void setMove(int *moveArray, bool isCurrent);
         void clearBoard();
 
         QAction *undoAction;

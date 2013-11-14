@@ -17,6 +17,7 @@ namespace Model{
         bool checkCompleted();
         void makeMove(Move move);
 
+        QString filePathRef;
         int** currentBoard;
         int** defaultBoard;
         int** solvedBoard;
