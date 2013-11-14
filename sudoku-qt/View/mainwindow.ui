@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>548</width>
-    <height>600</height>
+    <width>584</width>
+    <height>640</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>SODOKO</string>
+   <string>SUDOKU</string>
   </property>
   <widget class="QWidget" name="centralWidget"/>
   <widget class="QMenuBar" name="menuBar">
@@ -19,7 +19,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>548</width>
+     <width>584</width>
      <height>21</height>
     </rect>
    </property>

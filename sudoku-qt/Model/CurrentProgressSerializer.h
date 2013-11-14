@@ -7,6 +7,7 @@
 #include <QStack>
 
 #include "Puzzle.h"
+#include "PuzzleSerializer.h"
 
 namespace Model{
 
@@ -15,8 +16,8 @@ namespace Model{
     public:
         CurrentProgressSerializer();
         ~CurrentProgressSerializer();
-        void serialize(QStack<Model::Move> undo, Puzzle* puzzle, QString filePath);
-        Puzzle* deserialize(QStack<Model::Move> undo, QString filePath);
+        void serialize(Puzzle* puzzle, QString filePath);
+        Puzzle* deserialize(QString filePath, PuzzleSerializer puzzleSerializer);
     };
 
 }

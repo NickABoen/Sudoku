@@ -21,7 +21,7 @@ namespace Controller{
         MainController();
         ~MainController();
 
-        void displayBoard();
+        void displayDefaultBoard();
         void displayCurrentBoard();
         void clearBoard();
 
@@ -29,8 +29,6 @@ namespace Controller{
         Model::CurrentProgressSerializer currentProgressSerializer;
         Model::PuzzleSerializer puzzleSerializer;
         View::MainWindow view;
-        QStack<Model::Move> undo;
-        QStack<Model::Move> redo;
 
     public slots:
         void onLoadProgress();
@@ -43,9 +41,6 @@ namespace Controller{
 
     signals:
         void setDefaultMove(int *moveArray);
-
-    private:
-        Model::Move GetMoveOfCurrentPuzzle(int x, int y);
 
     };
 

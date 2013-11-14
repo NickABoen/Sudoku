@@ -10,14 +10,7 @@ CurrentProgressSerializer::~CurrentProgressSerializer(){
     //TODO
 }
 
-void CurrentProgressSerializer::serialize(QStack<Model::Move> undo, Puzzle* puzzle, QString filePath){
-    //TODO
-    Move* mv = new Move(1,8,4);
-    undo.push(*mv);
-    mv = new Move(1,3,8);
-    undo.push(*mv);
-    mv = new Move(1,7,7);
-    undo.push(*mv);
+void CurrentProgressSerializer::serialize(Puzzle* puzzle, QString filePath){
 
     qDebug("Serializing current progress...");
     std::ofstream file;
@@ -26,7 +19,7 @@ void CurrentProgressSerializer::serialize(QStack<Model::Move> undo, Puzzle* puzz
     if (!puzzle->filePathRef.isEmpty()) {
         //shouldn't be empty, but will fuck up either way if it is.
         file << puzzle->filePathRef.toUtf8().constData();
-        file << "\n";
+        file << "\n\n";
     }
 
     for (int i = 0; i < 9; i++) {
@@ -37,8 +30,17 @@ void CurrentProgressSerializer::serialize(QStack<Model::Move> undo, Puzzle* puzz
     }
     file << "\n";
 
-    while(!undo.isEmpty()) {
-        Move mv = undo.pop();
+    file << puzzle->undo.count() << "\n";
+    for(int i = 0; i < puzzle->undo.count(); i++){
+        Move mv = puzzle->undo[i];
+        file << mv.x << "," << mv.y << "," << mv.value << ",";
+        file << "\n";
+    }
+    file << "\n";
+
+    file << puzzle->redo.count() << "\n";
+    for(int i = 0; i < puzzle->redo.count(); i++){
+        Move mv = puzzle->redo[i];
         file << mv.x << "," << mv.y << "," << mv.value << ",";
         file << "\n";
     }
@@ -47,9 +49,9 @@ void CurrentProgressSerializer::serialize(QStack<Model::Move> undo, Puzzle* puzz
     file.close();
 }
 
-Puzzle* CurrentProgressSerializer::deserialize(QStack<Model::Move> undo, QString filePath){
+Puzzle* CurrentProgressSerializer::deserialize(QString filePath, PuzzleSerializer puzzleSerializer){
     qDebug("Deserializing current progress...");
-    Puzzle* puzzle = new Puzzle();
+    Puzzle* puzzle;
 
     std::string refFilePath;
     std::ifstream getRefFile(filePath.toLatin1());
@@ -62,23 +64,7 @@ Puzzle* CurrentProgressSerializer::deserialize(QStack<Model::Move> undo, QString
     char comma;
     qDebug("Setting Default and Solved");
 
-    std::ifstream oFile(qPath.toLatin1());
-
-    for (int i = 0; i < 9; i++) {
-        for (int j = 0; j < 9; j++) {
-            oFile >> puzzle->defaultBoard[i][j] >> comma;
-        }
-        oFile.ignore();
-    }
-    oFile.ignore();
-    for (int i = 0; i < 9; i++) {
-        for (int j = 0; j < 9; j++) {
-            oFile >> puzzle->solvedBoard[i][j] >> comma;
-        }
-        oFile.ignore();
-    }
-
-    oFile.close();
+    puzzle = puzzleSerializer.deserialize(qPath);
 
     //Reopen original filepath, set current
     qDebug("Reopening original to set current");
@@ -95,10 +81,21 @@ Puzzle* CurrentProgressSerializer::deserialize(QStack<Model::Move> undo, QString
 
     file.ignore();
 
-    int x,y,val;
-    while(file >> x >> comma >> y >> comma >> val >> comma) {
+    int count, x, y, val;
+    file >> count;
+    for(int i = 0; i < count; i++){
+        file >> x >> comma >> y >> comma >> val >> comma;
         Move* mv = new Move(x,y,val);
-        undo.push_back(*mv);
+        puzzle->undo.push(*mv);
+    }
+
+    file.ignore();
+
+    file >> count;
+    for(int i = 0; i < count; i++){
+        file >> x >> comma >> y >> comma >> val >> comma;
+        Move* mv = new Move(x,y,val);
+        puzzle->redo.push(*mv);
     }
 
     qDebug("Done.");

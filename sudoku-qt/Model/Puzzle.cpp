@@ -7,7 +7,9 @@ using namespace Model;
 Puzzle::Puzzle():
     currentBoard(new int*[9]),
     defaultBoard(new int*[9]),
-    solvedBoard(new int*[9])
+    solvedBoard(new int*[9]),
+    undo(),
+    redo()
 {
     for(int i = 0; i < 9; ++i){
         currentBoard[i] = new int[9];

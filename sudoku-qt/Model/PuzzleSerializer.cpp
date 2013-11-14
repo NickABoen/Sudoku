@@ -57,7 +57,6 @@ Puzzle* PuzzleSerializer::deserialize(QString filePath){
 
     file.close();
 
-    puzzle->currentBoard = puzzle->defaultBoard;
     puzzle->filePathRef = filePath;
     return puzzle;
 }

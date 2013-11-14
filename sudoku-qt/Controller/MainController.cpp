@@ -10,13 +10,14 @@
 
 using namespace Controller;
 
+bool clearRedoStack = true;
+bool enableUndoRedo = true;
+
 MainController::MainController(): QObject(NULL),
     view(),
     puzzle(),
     currentProgressSerializer(),
-    puzzleSerializer(),
-    undo(),
-    redo()
+    puzzleSerializer()
 {
     //Connect all signals and slots
     connect(&view, SIGNAL(onUndoPressed()), this, SLOT(onUndoMove()));
@@ -39,7 +40,7 @@ MainController::~MainController(){
 
 }
 
-void MainController::displayBoard(){
+void MainController::displayDefaultBoard(){
     for(int i = 0; i < 9; i++){
         for(int j = 0; j < 9; j++){
             if(puzzle->defaultBoard[i][j] != 0){
@@ -68,10 +69,23 @@ void MainController::onLoadProgress() {
     if(filePath != "")
     {
         qDebug(filePath.toLatin1());
-        puzzle = currentProgressSerializer.deserialize(undo, filePath);
+        puzzle = currentProgressSerializer.deserialize(filePath, puzzleSerializer);
+
+        enableUndoRedo = false;
+        displayDefaultBoard();
+        displayCurrentBoard();
+        enableUndoRedo = true;
+
+        if(puzzle->undo.count() > 0) view.undoAction->setEnabled(true);
+        if(puzzle->redo.count() > 0) view.redoAction->setEnabled(true);
+
+        view.centralWidget()->setEnabled(true);
+    } 
+    else{
+        //Popup error message...
+        //TODO
+        qDebug("Error filepath empty");
     }
-    displayCurrentBoard();
-    view.centralWidget()->setEnabled(true);
 }
 
 void MainController::onSaveProgress(){
@@ -83,7 +97,12 @@ void MainController::onSaveProgress(){
     if(filePath != "")
     {
         qDebug(filePath.toLatin1());
-        currentProgressSerializer.serialize(undo, puzzle, filePath);
+        currentProgressSerializer.serialize(puzzle, filePath);
+    }
+    else{
+        //Popup error message...
+        //TODO
+        qDebug("Error filepath empty");
     }
 }
 
@@ -123,14 +142,19 @@ void MainController::onLoadPuzzle(){
         }
         puzzle = puzzleSerializer.deserialize(filePath);
 
-        displayBoard();
-        view.centralWidget()->setEnabled(true);
+        enableUndoRedo = false;
+        displayDefaultBoard();
+        enableUndoRedo = true;
 
-        undo.clear();
-        redo.clear();
+        view.centralWidget()->setEnabled(true);
 
         view.undoAction->setEnabled(false);
         view.redoAction->setEnabled(false);
+    }
+    else{
+        //Popup error message...
+        //TODO
+        qDebug("Error filepath empty");
     }
 }
 
@@ -144,6 +168,11 @@ void MainController::onSavePuzzle(){
     {
         puzzleSerializer.serialize(puzzle, filePath);
     }
+    else{
+        //Popup error message...
+        //TODO
+        qDebug("Error filepath empty");
+    }
 }
 
 void MainController::onMakeMove(int* moveArray){
@@ -152,8 +181,18 @@ void MainController::onMakeMove(int* moveArray){
     int x = moveArray[1];
     int y = moveArray[2];
 
-    undo.push(Model::Move( x, y, puzzle->currentBoard[x][y]));
-    view.undoAction->setEnabled(true);
+    if(enableUndoRedo){
+        if(clearRedoStack){
+            puzzle->undo.push(Model::Move( x, y, puzzle->currentBoard[x][y]));
+            view.undoAction->setEnabled(true);
+
+            puzzle->redo.clear();
+            view.redoAction->setEnabled(false);
+        }
+        else{
+           clearRedoStack = true;
+        }
+    }
 
     puzzle->currentBoard[x][y] = value;
     if(puzzle->checkCompleted()){
@@ -173,37 +212,32 @@ void MainController::onMakeMove(int* moveArray){
 
 void MainController::onUndoMove(){
 
-    Model::Move undoMove = undo.pop();
+    Model::Move undoMove = puzzle->undo.pop();
 
     int x = undoMove.x;
     int y = undoMove.y;
 
-    redo.push(Model::Move(x, y, puzzle->currentBoard[x][y]));
+    puzzle->redo.push(Model::Move(x, y, puzzle->currentBoard[x][y]));
     view.redoAction->setEnabled(true);
 
     int moveArray[3] = {undoMove.value, x, y};
+    clearRedoStack = false;
     view.makeMove(moveArray);
-    undo.pop();
-    if(undo.size() == 0) view.undoAction->setEnabled(false);
+    if(puzzle->undo.size() == 0) view.undoAction->setEnabled(false);
 }
 
 void MainController::onRedoMove(){
 
-    Model::Move redoMove = redo.pop();
+    Model::Move redoMove = puzzle->redo.pop();
 
-    int moveArray[3] = {redoMove.value, redoMove.x, redoMove.y};
-    view.makeMove(moveArray);
-    if(redo.size() == 0) view.redoAction->setEnabled(false);
+    int x = redoMove.x;
+    int y = redoMove.y;
 
-    //undo.push(redoMove);
+    puzzle->undo.push(Model::Move(x, y, puzzle->currentBoard[x][y]));
     view.undoAction->setEnabled(true);
-}
 
-Model::Move MainController::GetMoveOfCurrentPuzzle(int x, int y){
-
-    Model::Move returnMove(x, y, puzzle->currentBoard[x][y]);
-
-    qDebug("New Move: ["+QString::number(returnMove.x).toLatin1()+", "+QString::number(returnMove.y).toLatin1()+"] = "+QString::number(returnMove.value).toLatin1());
-
-    return returnMove;
+    int moveArray[3] = {redoMove.value, x, y};
+    clearRedoStack = false;
+    view.makeMove(moveArray);
+    if(puzzle->redo.size() == 0) view.redoAction->setEnabled(false);
 }
