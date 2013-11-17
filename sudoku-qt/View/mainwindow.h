@@ -26,9 +26,7 @@ namespace View {
 
         QAction *undoAction;
         QAction *redoAction;
-
-    private slots:
-        void fieldChanged(QString text);
+        QAction *clearAction;
 
     signals:
         void onLoadProgressPressed();
@@ -38,18 +36,17 @@ namespace View {
         void onMakeMove(int *moveArray);
         void onUndoPressed();
         void onRedoPressed();
+        void onClearPressed();
+
+    private slots:
+        void fieldChanged(QString text);
 
     private:
-        Ui::MainWindow *ui;
-
         int * createMoveArray(QString text, QString fieldname);
         void createMenu();
 
+        Ui::MainWindow *ui;
         QLineEdit *fields[9][9];
-
-
-
-
     };
 }
 

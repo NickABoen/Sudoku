@@ -153,10 +153,9 @@ void MainWindow::createMenu()
         redoAction->setEnabled(false);
         connect(redoAction, SIGNAL(triggered()), this, SIGNAL(onRedoPressed()));
 
-        QAction *clearAction = editMenu->addAction("Clear");
+        clearAction = editMenu->addAction("Clear Board");
         clearAction->setEnabled(false);
-        //TODO
-
+        connect(clearAction, SIGNAL(triggered()), this, SIGNAL(onClearPressed()));
     }
 
     QMenu *settingsMenu = ui->menuBar->addMenu("Settings");

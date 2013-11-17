@@ -17,7 +17,7 @@ void CurrentProgressSerializer::serialize(Puzzle* puzzle, QString filePath){
     file.open(filePath.toLatin1());
 
     if (!puzzle->filePathRef.isEmpty()) {
-        //shouldn't be empty, but will fuck up either way if it is.
+        //shouldn't be empty, but will mess up either way if it is.
         file << puzzle->filePathRef.toUtf8().constData();
         file << "\n\n";
     }

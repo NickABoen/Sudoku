@@ -21,15 +21,6 @@ namespace Controller{
         MainController();
         ~MainController();
 
-        void displayDefaultBoard();
-        void displayCurrentBoard();
-        void clearBoard();
-
-        Model::Puzzle* puzzle;
-        Model::CurrentProgressSerializer currentProgressSerializer;
-        Model::PuzzleSerializer puzzleSerializer;
-        View::MainWindow view;
-
     public slots:
         void onLoadProgress();
         void onSaveProgress();
@@ -38,10 +29,16 @@ namespace Controller{
         void onMakeMove(int *moveArray);
         void onUndoMove();
         void onRedoMove();
+        void onClear();
 
-    signals:
-        void setDefaultMove(int *moveArray);
+    private:
+        void displayDefaultBoard();
+        void displayCurrentBoard();
 
+        Model::Puzzle* puzzle;
+        Model::CurrentProgressSerializer currentProgressSerializer;
+        Model::PuzzleSerializer puzzleSerializer;
+        View::MainWindow view;
     };
 
 }

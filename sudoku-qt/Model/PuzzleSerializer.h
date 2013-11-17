@@ -14,6 +14,7 @@ namespace Model{
     public:
         PuzzleSerializer();
         ~PuzzleSerializer();
+
         void serialize(Puzzle *puzzle, QString filePath);
         Puzzle* deserialize(QString filePath);
     };
