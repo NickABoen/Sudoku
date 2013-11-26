@@ -24,3 +24,5 @@ INCLUDEPATH += $$PWD/Model\
 DEPENDPATH += $$PWD/Model\
               $$PWD/View\
               $$PWD/Controller
+
+FORMS +=

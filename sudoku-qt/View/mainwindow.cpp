@@ -125,6 +125,9 @@ void MainWindow::createMenu()
         QAction *saveProgressAction = fileMenu->addAction("Save Progress");
         connect(saveProgressAction, SIGNAL(triggered()), this, SIGNAL(onSaveProgressPressed()));
 
+        QAction *generateBoardAction = fileMenu->addAction("Generate Board");
+        connect(generateBoardAction, SIGNAL(triggered()), this, SIGNAL(onGenerateBoardPressed()));
+
         QAction *exitAction = fileMenu->addAction("Exit");
         connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
     }

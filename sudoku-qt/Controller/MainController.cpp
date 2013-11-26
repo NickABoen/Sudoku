@@ -1,4 +1,5 @@
 #include "MainController.h"
+#include "difficultyselector.h"
 #include "Move.h"
 #include "Puzzle.h"
 
@@ -7,6 +8,7 @@
 #include <QMessageBox>
 #include <QAbstractButton>
 #include <QAction>
+#include <QPushButton>
 
 using namespace Controller;
 
@@ -26,6 +28,7 @@ MainController::MainController(): QObject(NULL),
     connect(&view, SIGNAL(onSaveProgressPressed()), this, SLOT(onSaveProgress()));
     connect(&view, SIGNAL(onLoadProgressPressed()), this, SLOT(onLoadProgress()));
     connect(&view, SIGNAL(onMakeMove(int*)), this, SLOT(onMakeMove(int*)));
+    connect(&view, SIGNAL(onGenerateBoardPressed()), this, SLOT(onGenerateBoard()));
 
     view.centralWidget()->setEnabled(false);
 
@@ -161,6 +164,11 @@ void MainController::onMakeMove(int* moveArray){
     }
 }
 
+void MainController::onGenerateBoard(){
+    DifficultySelector *DS = new DifficultySelector();
+    DS->setFixedSize(192,145);
+    DS->exec();
+}
 
 void MainController::onUndoMove(){
 

@@ -10,6 +10,7 @@
 #include "PuzzleSerializer.h"
 #include "CurrentProgressSerializer.h"
 #include "mainwindow.h"
+#include "difficultyselector.h"
 
 namespace Controller{
 
@@ -39,6 +40,7 @@ namespace Controller{
         void onMakeMove(int *moveArray);
         void onUndoMove();
         void onRedoMove();
+        void onGenerateBoard();
 
     signals:
         void setDefaultMove(int *moveArray);

@@ -37,6 +37,7 @@ namespace View {
         void onMakeMove(int *moveArray);
         void onUndoPressed();
         void onRedoPressed();
+        void onGenerateBoardPressed();
 
     private:
         Ui::MainWindow *ui;
