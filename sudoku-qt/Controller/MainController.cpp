@@ -12,17 +12,19 @@
 
 using namespace Controller;
 
+bool clearRedoStack = true;
+bool enableUndoRedo = true;
+
 MainController::MainController(): QObject(NULL),
     view(),
     puzzle(),
     currentProgressSerializer(),
-    puzzleSerializer(),
-    undo(),
-    redo()
+    puzzleSerializer()
 {
     //Connect all signals and slots
     connect(&view, SIGNAL(onUndoPressed()), this, SLOT(onUndoMove()));
     connect(&view, SIGNAL(onRedoPressed()), this, SLOT(onRedoMove()));
+    connect(&view, SIGNAL(onClearPressed()), this, SLOT(onClear()));
     connect(&view, SIGNAL(onSavePuzzlePressed()), this, SLOT(onSavePuzzle()));
     connect(&view, SIGNAL(onLoadPuzzlePressed()), this, SLOT(onLoadPuzzle()));
     connect(&view, SIGNAL(onSaveProgressPressed()), this, SLOT(onSaveProgress()));
@@ -42,30 +44,54 @@ MainController::~MainController(){
 
 }
 
-void MainController::displayBoard(){
+void MainController::displayDefaultBoard(){
     for(int i = 0; i < 9; i++){
         for(int j = 0; j < 9; j++){
             if(puzzle->defaultBoard[i][j] != 0){
                 int moveArray[3] = {puzzle->defaultBoard[i][j], i, j};
-                view.setDefaultMove(moveArray);
+                view.setMove(moveArray, false);
             }
         }
     }
 }
 
-void MainController::onLoadProgress(){
+void MainController::displayCurrentBoard(){
+    for(int i = 0; i < 9; i++){
+        for(int j = 0; j < 9; j++){
+            if(puzzle->currentBoard[i][j] != puzzle->defaultBoard[i][j]){
+                int moveArray[3] = {puzzle->currentBoard[i][j], i, j};
+                view.setMove(moveArray, true);
+            }
+        }
+    }
+}
 
+void MainController::onLoadProgress() {
     QString filePath;
     QFileDialog* fileDialog = new QFileDialog(&view, "Load Progress", "", "*.*");
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first();
     if(filePath != "")
     {
-        qDebug(filePath.toLatin1());
-        currentProgressSerializer.deserialize(undo, puzzle, filePath);
+        puzzle = currentProgressSerializer.deserialize(filePath, puzzleSerializer);
+
+        enableUndoRedo = false;
+        displayDefaultBoard();
+        displayCurrentBoard();
+        enableUndoRedo = true;
+
+        if(puzzle->undo.count() > 0){
+            view.clearAction->setEnabled(true);
+            view.undoAction->setEnabled(true);
+        }
+        if(puzzle->redo.count() > 0) view.redoAction->setEnabled(true);
+
+        view.centralWidget()->setEnabled(true);
+    } 
+    else{
+        //Popup error message...
+        //TODO
+        qDebug("Error filepath empty");
     }
-    displayBoard();
-
-
 }
 
 void MainController::onSaveProgress(){
@@ -76,8 +102,12 @@ void MainController::onSaveProgress(){
 
     if(filePath != "")
     {
-        qDebug(filePath.toLatin1());
-        currentProgressSerializer.serialize(undo, puzzle, filePath);
+        currentProgressSerializer.serialize(puzzle, filePath);
+    }
+    else{
+        //Popup error message...
+        //TODO
+        qDebug("Error filepath empty");
     }
 }
 
@@ -88,7 +118,6 @@ void MainController::onLoadPuzzle(){
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first(); //If user specifies more than one file only take first??
     if(filePath != "")
     {
-        qDebug(filePath.toLatin1());
         if(puzzle != NULL){
             //User started game, do they want to save progress?
             QMessageBox msgBox;
@@ -117,14 +146,20 @@ void MainController::onLoadPuzzle(){
         }
         puzzle = puzzleSerializer.deserialize(filePath);
 
-        displayBoard();
-        view.centralWidget()->setEnabled(true);
+        enableUndoRedo = false;
+        displayDefaultBoard();
+        enableUndoRedo = true;
 
-        undo.clear();
-        redo.clear();
+        view.centralWidget()->setEnabled(true);
 
         view.undoAction->setEnabled(false);
         view.redoAction->setEnabled(false);
+        view.clearAction->setEnabled(false);
+    }
+    else{
+        //Popup error message...
+        //TODO
+        qDebug("Error filepath empty");
     }
 }
 
@@ -138,6 +173,11 @@ void MainController::onSavePuzzle(){
     {
         puzzleSerializer.serialize(puzzle, filePath);
     }
+    else{
+        //Popup error message...
+        //TODO
+        qDebug("Error filepath empty");
+    }
 }
 
 void MainController::onMakeMove(int* moveArray){
@@ -146,8 +186,19 @@ void MainController::onMakeMove(int* moveArray){
     int x = moveArray[1];
     int y = moveArray[2];
 
-    undo.push(Model::Move( x, y, puzzle->currentBoard[x][y]));
-    view.undoAction->setEnabled(true);
+    if(enableUndoRedo){
+        if(clearRedoStack){
+            puzzle->undo.push(Model::Move( x, y, puzzle->currentBoard[x][y]));
+            view.clearAction->setEnabled(true);
+            view.undoAction->setEnabled(true);
+
+            puzzle->redo.clear();
+            view.redoAction->setEnabled(false);
+        }
+        else{
+           clearRedoStack = true;
+        }
+    }
 
     puzzle->currentBoard[x][y] = value;
     if(puzzle->checkCompleted()){
@@ -172,37 +223,49 @@ void MainController::onGenerateBoard(){
 
 void MainController::onUndoMove(){
 
-    Model::Move undoMove = undo.pop();
+    Model::Move undoMove = puzzle->undo.pop();
 
     int x = undoMove.x;
     int y = undoMove.y;
 
-    redo.push(Model::Move(x, y, puzzle->currentBoard[x][y]));
+    puzzle->redo.push(Model::Move(x, y, puzzle->currentBoard[x][y]));
     view.redoAction->setEnabled(true);
 
     int moveArray[3] = {undoMove.value, x, y};
+    clearRedoStack = false;
     view.makeMove(moveArray);
-    undo.pop();
-    if(undo.size() == 0) view.undoAction->setEnabled(false);
+    if(puzzle->undo.size() == 0){
+        view.clearAction->setEnabled(false);
+        view.undoAction->setEnabled(false);
+    }
 }
 
 void MainController::onRedoMove(){
 
-    Model::Move redoMove = redo.pop();
+    Model::Move redoMove = puzzle->redo.pop();
 
-    int moveArray[3] = {redoMove.value, redoMove.x, redoMove.y};
-    view.makeMove(moveArray);
-    if(redo.size() == 0) view.redoAction->setEnabled(false);
+    int x = redoMove.x;
+    int y = redoMove.y;
 
-    //undo.push(redoMove);
+    puzzle->undo.push(Model::Move(x, y, puzzle->currentBoard[x][y]));
     view.undoAction->setEnabled(true);
+    view.clearAction->setEnabled(true);
+
+    int moveArray[3] = {redoMove.value, x, y};
+    clearRedoStack = false;
+    view.makeMove(moveArray);
+    if(puzzle->redo.size() == 0) view.redoAction->setEnabled(false);
 }
 
-Model::Move MainController::GetMoveOfCurrentPuzzle(int x, int y){
+void MainController::onClear(){
 
-    Model::Move returnMove(x, y, puzzle->currentBoard[x][y]);
+    view.clearBoard();
+    displayDefaultBoard();
 
-    qDebug("New Move: ["+QString::number(returnMove.x).toLatin1()+", "+QString::number(returnMove.y).toLatin1()+"] = "+QString::number(returnMove.value).toLatin1());
+    puzzle->undo.clear();
+    puzzle->redo.clear();
 
-    return returnMove;
+    view.undoAction->setEnabled(false);
+    view.redoAction->setEnabled(false);
+    view.clearAction->setEnabled(false);
 }
