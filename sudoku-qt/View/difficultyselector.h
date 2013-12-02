@@ -18,9 +18,22 @@ public:
 
 private slots:
 
-    void EasyClicked();
-    void MediumClicked();
-    void HardClicked();
+    void EasyClicked(){
+
+        DS = 1;
+        close();
+    }
+
+    void MediumClicked(){
+
+        DS = 2;
+        close();
+    }
+    void HardClicked(){
+
+        DS = 3;
+        close();
+    }
 
 signals:
     void on_EasyButton_clicked();

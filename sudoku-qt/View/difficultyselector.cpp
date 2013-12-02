@@ -17,18 +17,3 @@ DifficultySelector::~DifficultySelector()
     delete ui;
 }
 
-void DifficultySelector::EasyClicked(){
-    DS = 1;
-    close();
-}
-
-void DifficultySelector::MediumClicked(){
-    DS = 2;
-    close();
-
-}
-
-void DifficultySelector::HardClicked(){
-    DS = 3;
-    close();
-}

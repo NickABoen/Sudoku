@@ -27,7 +27,7 @@ namespace Model{
         bool **columnContains;
         //represents the Board to be solved
         int **defaultBoard;
-        //represents the Final Solved Board
+        //internal representation of the Board
         int **board;
     public:
         //Constructor that takes in a Board

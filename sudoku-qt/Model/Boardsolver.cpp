@@ -24,6 +24,7 @@ namespace Model{
                 sectionContains[i][j] = false;
                 rowContains[i][j] = false;
                 columnContains[i][j] = false;
+                if(j<9)board[i][j] = 0;
             }
         }
     }
@@ -59,7 +60,8 @@ namespace Model{
         }
         return availableCells;
     }
-    //tries to add a value to given secion and location
+    //tries to add a value to given secion and location of
+    //the internal representation of the board
     bool BoardSolver::AddValue(int section,int loc, int val){
         if(sectionContains[section][val])return false;
         int row = GetRow(section, loc);
@@ -162,11 +164,11 @@ namespace Model{
     //Calculates the row when given a section
     //and location.
     int BoardSolver::GetRow(int section, int loc){
-        return 3*(section%3)+loc%3;
+        return 3*(section/3)+loc/3;
     }
     //Calculates the Column when given a section
     //and location.
     int BoardSolver::GetColumn(int section, int loc){
-        return 3*(section/3)+loc/3;
+        return 3*(section%3)+loc%3;
     }
 }

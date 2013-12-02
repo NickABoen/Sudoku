@@ -1,5 +1,6 @@
 #include "MainController.h"
 #include "difficultyselector.h"
+#include "BoardGenerator.h"
 #include "Move.h"
 #include "Puzzle.h"
 
@@ -166,8 +167,15 @@ void MainController::onMakeMove(int* moveArray){
 
 void MainController::onGenerateBoard(){
     DifficultySelector *DS = new DifficultySelector();
+    BoardGenerator *BG = new BoardGenerator();
     DS->setFixedSize(192,145);
     DS->exec();
+    int res = DS->DS;
+    BG->Generate(res);
+    /*QString tmp = QString::number(res);
+    QMessageBox msgbox;
+    msgbox.setInformativeText(tmp);
+    msgbox.exec();*/
 }
 
 void MainController::onUndoMove(){
