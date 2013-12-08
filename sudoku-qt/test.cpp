@@ -1,4 +1,4 @@
 #include "test.h"
 
-bool test = true;
+bool test = false;
 std::ofstream testfile("test.txt", std::ofstream::out);

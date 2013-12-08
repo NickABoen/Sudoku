@@ -343,7 +343,7 @@ void MainController::onGenerateBoard(){
 
         if(ret == msgBox.Save){
             //Save user progress
-            onSaveProgress();
+            onSavePuzzle();
         }
         else if(ret == msgBox.Discard){
             //Discard user progress
