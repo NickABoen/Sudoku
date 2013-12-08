@@ -78,7 +78,6 @@ void MainWindow::setMove(int* moveArray, bool isCurrent){
     int value = moveArray[0];
     int x = moveArray[1];
     int y = moveArray[2];
-    qDebug(QString::number(isCurrent).toLatin1());
     fields[x][y]->setEnabled(isCurrent);
     fields[x][y]->setText(QString::number(value));
 }
@@ -108,7 +107,6 @@ int * MainWindow::createMoveArray(QString text, QString fieldname) {
     static int loc[3];
     QStringList pieces = fieldname.split("_");
 
-    qDebug(text.toLatin1());
     if(text != ""){
         loc[0] = text.toInt();
     }

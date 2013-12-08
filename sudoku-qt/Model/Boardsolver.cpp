@@ -2,11 +2,13 @@
 #include "PriorityQueue.h"
 #include <iostream>
 #include <string>
+#include <QtDebug>
 namespace Model{
     //Constructor that allocates memory for
     //all the initial variables and arrays.
     //inputBoard is the board to be solved.
     BoardSolver::BoardSolver(int** inputBoard){
+        this->FillBoardTrack = 0;
         sectionContains = new bool*[9];
         rowContains = new bool*[9];
         columnContains = new bool*[9];
@@ -16,7 +18,6 @@ namespace Model{
             sectionContains[i] = new bool[10];
             rowContains[i] = new bool[10];
             columnContains[i] = new bool[10];
-            //defaultBoard[i] = new int[9];
             board[i] = new int[9];
         }
         for(int i = 0; i<9; i++){
@@ -26,6 +27,11 @@ namespace Model{
                 columnContains[i][j] = false;
             }
         }
+        for(int i = 0; i < 9; i++){
+            for(int j = 0; j < 9; j++){
+                board[i][j] = 0;
+            }
+        }
     }
     //Destructor for the BoardSolver
     BoardSolver::~BoardSolver(){
@@ -33,14 +39,10 @@ namespace Model{
             delete(sectionContains[i]);
             delete(rowContains[i]);
             delete(columnContains[i]);
-            delete(defaultBoard[i]);
-            delete(board[i]);
         }
         delete(sectionContains);
         delete(rowContains);
         delete(columnContains);
-        delete(defaultBoard);
-        delete(board);
     }
     //Function that builds and fills a priority queue
     //containing the empty cells, with cells having a
@@ -53,19 +55,22 @@ namespace Model{
             for(int j = 0; j < 9; j++){
                 if(board[i][j] == 0){
                     int pri = sectionOccupied[i]+rowOccupied[GetRow(i,j)]+columnOccupied[GetColumn(i,j)];
-                    availableCells.Add(new QPoint(i,j),pri);
+                    int p = (9*i)+j;
+                    availableCells.Add(p,pri);
                 }
             }
         }
         return availableCells;
     }
-    //tries to add a value to given secion and location
+    //tries to add a value to given secion and location of
+    //the internal representation of the board
     bool BoardSolver::AddValue(int section,int loc, int val){
         if(sectionContains[section][val])return false;
         int row = GetRow(section, loc);
         if(rowContains[row][val])return false;
+
         int col = GetColumn(section, loc);
-        if(columnContains[col,val])return false;
+        if(columnContains[col][val])return false;
         board[section][loc] = val;
         sectionContains[section][val] = true;
         rowContains[row][val] = true;
@@ -75,13 +80,13 @@ namespace Model{
     //Increases the priorityies of each available cell
     //in the same section, row, and column as the cell
     //in the cell in the given section and location
-    void BoardSolver::IncreasePriorities(PriorityQueue availableCells, int section, int loc){
+    void BoardSolver::IncreasePriorities(PriorityQueue& availableCells, int section, int loc){
         int row = GetRow(section, loc);
         int col = GetColumn(section, loc);
         for(int i = 0; i < 9; i++){
             for(int j = 0; j < 9; j++){
                 if(board[i][j] == 0){
-                    QPoint* p = new QPoint(i,j);
+                    int p = (9*i)+j;
                     if(i == section) availableCells.IncreasePriority(p);
                     int thisRow = GetRow(i,j);
                     int thisCol = GetColumn(i,j);
@@ -94,13 +99,13 @@ namespace Model{
     //Decreases the priorityies of each available cell
     //in the same section, row, and column as the cell
     //in the cell in the given section and location
-    void BoardSolver::DecreasePriorities(PriorityQueue availableCells, int section, int loc){
+    void BoardSolver::DecreasePriorities(PriorityQueue& availableCells, int section, int loc){
         int row = GetRow(section, loc);
         int col = GetColumn(section, loc);
         for(int i = 0; i < 9; i++){
             for(int j = 0; j < 9; j++){
                 if(board[i][j] == 0){
-                    QPoint* p = new QPoint(i,j);
+                    int p = (9*i)+j;
                     if(i == section) availableCells.DecreasePriority(p);
                     int thisRow = GetRow(i,j);
                     int thisCol = GetColumn(i,j);
@@ -114,13 +119,14 @@ namespace Model{
     //are no conflicts.  If a solution is found, leaves
     //that solution in the Final Solved Board and
     //returns true if was successful.
-    bool BoardSolver::FillBoard(PriorityQueue availableCells){
+    bool BoardSolver::FillBoard(PriorityQueue& availableCells){
+
         if(availableCells.count == 0) return true;
         else{
             int priority = availableCells.MaxPriority();
-            QPoint* cell = availableCells.RemoveMax();
-            int section = cell->x();
-            int loc = cell->y();
+            int cell = availableCells.RemoveMax();
+            int section = cell/9;
+            int loc = cell%9;
             board[section][loc] = 1;
             IncreasePriorities(availableCells, section, loc);
             for(int i = 1; i <=9; i++){
@@ -137,14 +143,22 @@ namespace Model{
             DecreasePriorities(availableCells, section, loc);
             availableCells.Add(cell,priority);
             board[section][loc] = 0;
+
             return false;
         }
     }
     //Tries to solve the Board
     int** BoardSolver::Solve(){
-        int sectionOccupied[9];
-        int rowOccupied[9];
-        int collumnOccupied[9];
+
+
+        int *sectionOccupied = new int[9];
+        int *rowOccupied = new int[9];
+        int *collumnOccupied = new int[9];
+        for(int i = 0; i<9; i++){
+            sectionOccupied[i] = 0;
+            rowOccupied[i] = 0;
+            collumnOccupied[i] = 0;
+        }
         for(int i = 0; i < 9; i++){
             for(int j = 0; j < 9; j++){
                 if(defaultBoard[i][j] > 0){
@@ -156,17 +170,18 @@ namespace Model{
             }
         }
         PriorityQueue availableCells  = FillPriorityQueue(sectionOccupied, rowOccupied, collumnOccupied);
-        if(FillBoard(availableCells)) return board;
-        else return defaultBoard;
+        if(FillBoard(availableCells)){ return board;}
+        else{ return defaultBoard;}
     }
     //Calculates the row when given a section
     //and location.
     int BoardSolver::GetRow(int section, int loc){
-        return 3*(section%3)+loc%3;
+        return 3*(section/3)+loc/3;
     }
     //Calculates the Column when given a section
     //and location.
     int BoardSolver::GetColumn(int section, int loc){
-        return 3*(section/3)+loc/3;
+        return 3*(section%3)+loc%3;
     }
+
 }

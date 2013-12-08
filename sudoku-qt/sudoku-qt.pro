@@ -11,7 +11,9 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = sudoku-qt
 TEMPLATE = app
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+           test.h \
+           test.cpp
 
 include(Model/Model.pri)
 include(View/View.pri)

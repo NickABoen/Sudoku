@@ -31,10 +31,10 @@ namespace Controller{
         void onUndoMove();
         void onRedoMove();
         void onGenerateBoard();
+        void onClear();
 
     signals:
         void setDefaultMove(int *moveArray);
-        void onClear();
 
     private:
         void displayDefaultBoard();
