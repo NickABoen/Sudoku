@@ -168,10 +168,40 @@ void MainController::onMakeMove(int* moveArray){
 void MainController::onGenerateBoard(){
     DifficultySelector *DS = new DifficultySelector();
     BoardGenerator *BG = new BoardGenerator();
+    if(puzzle != NULL){
+        //User started game, do they want to save progress?
+        QMessageBox msgBox;
+        msgBox.setText("You have unsaved progress.");
+        msgBox.setInformativeText("Do you want to save your progress?");
+        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Save);
+        int ret = msgBox.exec();
+
+        if(ret == msgBox.Save){
+            //Save user progress
+            onSaveProgress();
+        }
+        else if(ret == msgBox.Discard){
+            //Discard user progress
+            //Do nothing
+        }
+        else if(ret == msgBox.Cancel){
+            //Don't save or discard progress
+            return;
+        }
+
+        //User done saving/discarding game, clear board and delete puzzle
+        view.clearBoard();
+        delete puzzle;
+    }
+    puzzle = new Puzzle();
     DS->setFixedSize(192,145);
     DS->exec();
     int res = DS->DS;
-    BG->Generate(res);
+    puzzle->defaultBoard = BG->ConvertBoard(BG->Generate(res));
+    puzzle->solvedBoard = BG->ConvertBoard(BG->FinalBoard);
+    displayBoard();
+    view.centralWidget()->setEnabled(true);
     /*QString tmp = QString::number(res);
     QMessageBox msgbox;
     msgbox.setInformativeText(tmp);

@@ -3,6 +3,7 @@
 #include <QMap>
 #include <QPair>
 #include <QPoint>
+#include <QHash>
 namespace Model{
     //Struct representing an x and y
     //point.
@@ -14,14 +15,16 @@ namespace Model{
             y = Y;
         }
     };*/
-    class PriorityQueue {
+class PriorityQueue {
     private:
-        //Elements stored in the priority queue,
+        //Elements stored in the pritority queue,
         //with their priorities as keys.
-        QPair<int, QPoint*> *elements;
+        //QPair<int, QPoint*> *elements;
+        QPair<int, int> *elements;
         //maps each element in the priority queue
         //to its index in elements.
-        QMap<QPoint*, int> location;
+        //QHash<QPoint*, int> location;
+        QHash<int, int> location;
         //Moves elements[i] upward in the priority
         //queue to an appropriate location.
         void SiftUp(int);
@@ -44,15 +47,19 @@ namespace Model{
         PriorityQueue(int);
         //adds the given point to the Priority queue,
         //with the given priority.
-        void Add(QPoint*,int);
+        //void Add(QPoint*,int);
+        void Add(int, int);
         //removes an element with the maximum priority.
-        QPoint* RemoveMax(void);
+        //QPoint* RemoveMax(void);
+        int RemoveMax(void);
         //Decreases the priority of the given elements
         //by 1.
-        void DecreasePriority(QPoint*);
+        //void DecreasePriority(QPoint*);
+        void DecreasePriority(int);
         //Increases the priority of the given elements
         //by 1.
-        void IncreasePriority(QPoint*);
+        //void IncreasePriority(QPoint*);
+        void IncreasePriority(int);
     };
 }
 #endif

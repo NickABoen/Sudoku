@@ -2,7 +2,7 @@
 #define BOARDSOLVER_H
 #include "PriorityQueue.h"
 namespace Model{
-    class BoardSolver {
+class BoardSolver {
     private:
         //a boolean array that represents
         //each section of a sudoku board
@@ -29,6 +29,7 @@ namespace Model{
         int **defaultBoard;
         //internal representation of the Board
         int **board;
+        int FillBoardTrack;
     public:
         //Constructor that takes in a Board
         //and sets the Board to the
@@ -47,16 +48,16 @@ namespace Model{
         //Increases the priorityies of each available cell
         //in the same section, row, and column as the cell
         //in the cell in the given section and location
-        void IncreasePriorities(PriorityQueue, int, int);
+        void IncreasePriorities(PriorityQueue&, int, int);
         //Decreases the priorityies of each available cell
         //in the same section, row, and column as the cell
         //in the cell in the given section and location
-        void DecreasePriorities(PriorityQueue, int, int);
+        void DecreasePriorities(PriorityQueue&, int, int);
         //looks for a solution to the puzzle, assuming there
         //are no conflicts.  If a solution is found, leaves
         //that solution in the Final Solved Board and
         //returns true if was successful.
-        bool FillBoard(PriorityQueue);
+        bool FillBoard(PriorityQueue&);
         //Tries to solve the Board
         int** Solve(void);
         //Calculates the row when given a section
