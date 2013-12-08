@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include <QDebug>
+#include <QKeyEvent>
 
 
 using namespace View;
@@ -12,6 +13,10 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    int pad = 20;
+    int seperatorWidth = 2;
+    int squareSize = 60;
+
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
 
@@ -21,7 +26,10 @@ MainWindow::MainWindow(QWidget *parent) :
             QValidator *val = new QIntValidator(1,9,field);
             field->setValidator(val);
             field->setObjectName(QString::number(i) + "_" + QString::number(j));
-            field->setGeometry(i*60 + i/3*4, j*60 + j/3*4, 60, 60);
+            field->setGeometry(i*squareSize + i/3*seperatorWidth + pad,
+                               j*squareSize + j/3*seperatorWidth + pad,
+                               squareSize,
+                               squareSize);
             field->setAlignment(Qt::AlignCenter);
             field->setStyleSheet("font: 28pt;");
 
@@ -32,23 +40,23 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QFrame *line0 = new QFrame(ui->centralWidget);
     line0->setFrameShape(QFrame::HLine);
-    line0->setGeometry(0, 3*60, 60*9+8, 4);
-    line0->setLineWidth(4);
+    line0->setGeometry(0 + pad, 3*squareSize + pad, squareSize*9+seperatorWidth*2, seperatorWidth);
+    line0->setLineWidth(seperatorWidth);
 
     QFrame *line1 = new QFrame(ui->centralWidget);
     line1->setFrameShape(QFrame::HLine);
-    line1->setGeometry(0, 6*60+4, 60*9+8, 4);
-    line1->setLineWidth(4);
+    line1->setGeometry(0 + pad, 6*squareSize+4 + pad, squareSize*9+seperatorWidth*2, seperatorWidth);
+    line1->setLineWidth(seperatorWidth);
 
     QFrame *line2 = new QFrame(ui->centralWidget);
     line2->setFrameShape(QFrame::VLine);
-    line2->setGeometry(3*60, 0, 4, 60*9+8);
-    line2->setLineWidth(4);
+    line2->setGeometry(3*squareSize + pad, 0 + pad, seperatorWidth, squareSize*9+seperatorWidth*2);
+    line2->setLineWidth(seperatorWidth);
 
     QFrame *line3 = new QFrame(ui->centralWidget);
     line3->setFrameShape(QFrame::VLine);
-    line3->setGeometry(6*60+4, 0, 4, 60*9+8);
-    line3->setLineWidth(4);
+    line3->setGeometry(6*squareSize+seperatorWidth + pad, 0 + pad, seperatorWidth, squareSize*9+seperatorWidth*2);
+    line3->setLineWidth(seperatorWidth);
 
     createMenu();
 }
@@ -66,9 +74,12 @@ void MainWindow::fieldChanged(QString text)
     emit onMakeMove(moveArray);
 }
 
-void MainWindow::setDefaultMove(int* moveArray){
-    makeMove(moveArray);
-    fields[moveArray[1]][moveArray[2]]->setEnabled(false);
+void MainWindow::setMove(int* moveArray, bool isCurrent){
+    int value = moveArray[0];
+    int x = moveArray[1];
+    int y = moveArray[2];
+    fields[x][y]->setEnabled(isCurrent);
+    fields[x][y]->setText(QString::number(value));
 }
 
 void MainWindow::makeMove(int* moveArray){
@@ -96,7 +107,6 @@ int * MainWindow::createMoveArray(QString text, QString fieldname) {
     static int loc[3];
     QStringList pieces = fieldname.split("_");
 
-    qDebug(text.toLatin1());
     if(text != ""){
         loc[0] = text.toInt();
     }
@@ -116,8 +126,10 @@ void MainWindow::createMenu()
         QAction *loadPuzzleAction = fileMenu->addAction("Load Puzzle");
         connect(loadPuzzleAction, SIGNAL(triggered()), this, SIGNAL(onLoadPuzzlePressed()));
 
-        QAction *savePuzzleAction = fileMenu->addAction("Save Puzzle");
-        connect(savePuzzleAction, SIGNAL(triggered()), this, SIGNAL(onSavePuzzlePressed()));
+        //Not needed for this phase, not even sure if we will ever want a menu option for this
+        //Will probably just want to use functionality for generating puzzles...
+        //QAction *savePuzzleAction = fileMenu->addAction("Save Puzzle");
+        //connect(savePuzzleAction, SIGNAL(triggered()), this, SIGNAL(onSavePuzzlePressed()));
 
         QAction *loadProgressAction = fileMenu->addAction("Load Progress");
         connect(loadProgressAction, SIGNAL(triggered()), this, SIGNAL(onLoadProgressPressed()));
@@ -141,11 +153,17 @@ void MainWindow::createMenu()
         redoAction = editMenu->addAction("Redo");
         redoAction->setEnabled(false);
         connect(redoAction, SIGNAL(triggered()), this, SIGNAL(onRedoPressed()));
+
+        clearAction = editMenu->addAction("Clear Board");
+        clearAction->setEnabled(false);
+        connect(clearAction, SIGNAL(triggered()), this, SIGNAL(onClearPressed()));
     }
 
     QMenu *settingsMenu = ui->menuBar->addMenu("Settings");
     {
         QAction *settingsAction = settingsMenu->addAction("Settings");
+        settingsAction->setEnabled(false);//Not implemented in this phase
         //TODO
     }
 }
+

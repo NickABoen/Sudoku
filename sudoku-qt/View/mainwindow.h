@@ -19,15 +19,14 @@ namespace View {
     public:
         explicit MainWindow(QWidget *parent = 0);
         ~MainWindow();
-        void setDefaultMove(int *moveArray);
+
         void makeMove(int *moveArray);
+        void setMove(int *moveArray, bool isCurrent);
         void clearBoard();
 
         QAction *undoAction;
         QAction *redoAction;
-
-    private slots:
-        void fieldChanged(QString text);
+        QAction *clearAction;
 
     signals:
         void onLoadProgressPressed();
@@ -38,18 +37,17 @@ namespace View {
         void onUndoPressed();
         void onRedoPressed();
         void onGenerateBoardPressed();
+        void onClearPressed();
+
+    private slots:
+        void fieldChanged(QString text);
 
     private:
-        Ui::MainWindow *ui;
-
         int * createMoveArray(QString text, QString fieldname);
         void createMenu();
 
+        Ui::MainWindow *ui;
         QLineEdit *fields[9][9];
-
-
-
-
     };
 }
 

@@ -22,16 +22,6 @@ namespace Controller{
         MainController();
         ~MainController();
 
-        void displayBoard();
-        void clearBoard();
-
-        Model::Puzzle* puzzle;
-        Model::CurrentProgressSerializer currentProgressSerializer;
-        Model::PuzzleSerializer puzzleSerializer;
-        View::MainWindow view;
-        QStack<Model::Move> undo;
-        QStack<Model::Move> redo;
-
     public slots:
         void onLoadProgress();
         void onSaveProgress();
@@ -41,13 +31,19 @@ namespace Controller{
         void onUndoMove();
         void onRedoMove();
         void onGenerateBoard();
+        void onClear();
 
     signals:
         void setDefaultMove(int *moveArray);
 
     private:
-        Model::Move GetMoveOfCurrentPuzzle(int x, int y);
+        void displayDefaultBoard();
+        void displayCurrentBoard();
 
+        Model::Puzzle* puzzle;
+        Model::CurrentProgressSerializer currentProgressSerializer;
+        Model::PuzzleSerializer puzzleSerializer;
+        View::MainWindow view;
     };
 
 }

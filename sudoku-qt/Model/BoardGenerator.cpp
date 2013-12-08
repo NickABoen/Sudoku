@@ -109,8 +109,6 @@ using namespace Model;
     bool BoardGenerator::RemoveValue(int sec, int loc){
         int S1 = sec;
         int L1 = loc;
-        int x1 = GetRow(sec, loc);
-        int y1 = GetColumn(sec, loc);
         int x2 = 8-GetRow(sec, loc);
         int y2 = 8-GetColumn(sec,loc);
         int S2 = GetSection(x2,y2);
