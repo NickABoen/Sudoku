@@ -362,10 +362,12 @@ void MainController::onGenerateBoard(){
     DS->setFixedSize(192,145);
     DS->exec();
     int res = DS->DS;
-    puzzle->defaultBoard = BG->ConvertBoard(BG->Generate(res));
-    puzzle->solvedBoard = BG->ConvertBoard(BG->FinalBoard);
-    displayDefaultBoard();
-    view.centralWidget()->setEnabled(true);
+    if(res > 0){
+        puzzle->defaultBoard = BG->ConvertBoard(BG->Generate(res));
+        puzzle->solvedBoard = BG->ConvertBoard(BG->FinalBoard);
+        displayDefaultBoard();
+        view.centralWidget()->setEnabled(true);
+    }
     /*QString tmp = QString::number(res);
     QMessageBox msgbox;
     msgbox.setInformativeText(tmp);
