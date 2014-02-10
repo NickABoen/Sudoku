@@ -19,5 +19,5 @@ build*
 
 .DS_Store
 
-#Debug folder
-#*/Debug/*
+#Debug folderBBB
+*/Debug/
