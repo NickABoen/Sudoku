@@ -38,6 +38,7 @@ namespace View {
         void onRedoPressed();
         void onGenerateBoardPressed();
         void onClearPressed();
+        void onHintPressed();
 
     private slots:
         void fieldChanged(QString text);

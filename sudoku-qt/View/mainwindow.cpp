@@ -161,8 +161,9 @@ void MainWindow::createMenu()
 
     QMenu *settingsMenu = ui->menuBar->addMenu("Settings");
     {
-        QAction *settingsAction = settingsMenu->addAction("Settings");
-        settingsAction->setEnabled(false);//Not implemented in this phase
+        QAction *settingsAction = settingsMenu->addAction("Hints");
+        settingsAction->setEnabled(true);
+        connect(settingsAction, SIGNAL(triggered()), this, SIGNAL(onHintPressed()));
         //TODO
     }
 }

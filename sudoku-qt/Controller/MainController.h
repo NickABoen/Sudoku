@@ -32,6 +32,7 @@ namespace Controller{
         void onRedoMove();
         void onGenerateBoard();
         void onClear();
+        void onHint();
 
     signals:
         void setDefaultMove(int *moveArray);

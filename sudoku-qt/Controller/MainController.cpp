@@ -41,6 +41,7 @@ MainController::MainController(): QObject(NULL),
     connect(&view, SIGNAL(onLoadProgressPressed()), this, SLOT(onLoadProgress()));
     connect(&view, SIGNAL(onMakeMove(int*)), this, SLOT(onMakeMove(int*)));
     connect(&view, SIGNAL(onGenerateBoardPressed()), this, SLOT(onGenerateBoard()));
+    connect(&view, SIGNAL(onHintPressed()), this, SLOT(onHint()));
 
     view.centralWidget()->setEnabled(false);
 
@@ -372,6 +373,19 @@ void MainController::onGenerateBoard(){
     QMessageBox msgbox;
     msgbox.setInformativeText(tmp);
     msgbox.exec();*/
+}
+
+void MainController::onHint(){
+
+    int x = rand() % 9;
+    int y = rand() % 9;
+    while(puzzle->currentBoard[x][y] != 0){
+        x = rand() % 9;
+        y = rand() % 9;
+    }
+    int moveArray[3] = {puzzle->solvedBoard[x][y], x, y};
+    view.setMove(moveArray, false);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////
