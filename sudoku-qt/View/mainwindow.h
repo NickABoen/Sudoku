@@ -23,6 +23,7 @@ namespace View {
         void makeMove(int *moveArray);
         void setMove(int *moveArray, bool isCurrent);
         void clearBoard();
+        bool isFieldEnabled(int i, int j);
 
         QAction *undoAction;
         QAction *redoAction;

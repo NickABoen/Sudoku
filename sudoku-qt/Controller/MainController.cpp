@@ -366,8 +366,15 @@ void MainController::onGenerateBoard(){
     if(res > 0){
         puzzle->defaultBoard = BG->ConvertBoard(BG->Generate(res));
         puzzle->solvedBoard = BG->ConvertBoard(BG->FinalBoard);
+
+        enableUndoRedo = false;
         displayDefaultBoard();
+        enableUndoRedo = true;
+
         view.centralWidget()->setEnabled(true);
+        view.undoAction->setEnabled(false);
+        view.redoAction->setEnabled(false);
+        view.clearAction->setEnabled(false);
     }
     /*QString tmp = QString::number(res);
     QMessageBox msgbox;
@@ -376,7 +383,7 @@ void MainController::onGenerateBoard(){
 }
 
 void MainController::onHint(){
-
+    //this needs to be optimized.
     int x = rand() % 9;
     int y = rand() % 9;
     while(puzzle->currentBoard[x][y] != 0){
@@ -394,6 +401,12 @@ void MainController::onHint(){
 void MainController::onUndoMove(){
 
     if(test) testfile << "MC31 ####################### MainController onUndoMove #######################\n";
+
+    Model::Move checkMove = puzzle->undo.top();
+    if (!view.isFieldEnabled(checkMove.x, checkMove.y)) {
+        //If the top value is locked (hints, etc), then remove it and don't use it.
+        puzzle->undo.pop();
+    }
 
     Model::Move undoMove = puzzle->undo.pop();
 

@@ -118,6 +118,10 @@ int * MainWindow::createMoveArray(QString text, QString fieldname) {
     return loc;
 }
 
+bool MainWindow::isFieldEnabled(int i, int j) {
+    return fields[i][j]->isEnabled();
+}
+
 
 void MainWindow::createMenu()
 {
