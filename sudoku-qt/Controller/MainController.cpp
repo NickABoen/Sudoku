@@ -314,6 +314,7 @@ void MainController::onMakeMove(int* moveArray){
         msgBox.setInformativeText("Do you want to start a new puzzle or progress?");
         QAbstractButton *puzzleBtn = msgBox.addButton(trUtf8("Load Puzzle"), QMessageBox::YesRole);
         QAbstractButton *progressBtn = msgBox.addButton(trUtf8("Load Progress"), QMessageBox::NoRole);
+        QAbstractButton *generateBtn = msgBox.addButton(trUtf8("Generate Puzzle"), QMessageBox::NoRole);
         msgBox.exec();
 
         if(msgBox.clickedButton() == puzzleBtn){
@@ -323,6 +324,10 @@ void MainController::onMakeMove(int* moveArray){
         else if (msgBox.clickedButton() == progressBtn){
             if(test) testfile << "MC40 MessageBox Load Progress button clicked\n";
             onLoadProgress();
+        }
+        else if (msgBox.clickedButton() == generateBtn){
+            if(test) testfile << "MC40 MessageBox Load Progress button clicked\n";
+            onGenerateBoard();
         }
     }
 }
