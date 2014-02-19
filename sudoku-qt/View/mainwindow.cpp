@@ -33,6 +33,17 @@ MainWindow::MainWindow(QWidget *parent) :
             field->setAlignment(Qt::AlignCenter);
             field->setStyleSheet("font: 28pt;");
 
+            labels[i][j] = new QLabel(ui->centralWidget);
+            QLabel *label = labels[i][j];
+            label->setEnabled(true);
+            label->setGeometry(i*squareSize + i/3*seperatorWidth + pad,
+                               j*squareSize + j/3*seperatorWidth + pad,
+                               squareSize,
+                               squareSize/4);
+            label->setText("");
+
+
+            connect(field, SIGNAL(selectionChanged()), this, SLOT(fieldFocused()));
             connect(field, SIGNAL(textChanged(QString)),this,SLOT(fieldChanged(QString)));
 
         }
@@ -72,6 +83,19 @@ void MainWindow::fieldChanged(QString text)
     QLineEdit *field = (QLineEdit *)sender();
     int *moveArray = createMoveArray(text, field->objectName());
     emit onMakeMove(moveArray);
+}
+
+void MainWindow::fieldFocused() {
+    if (isNotesEnabled()) {
+        QLineEdit *field = (QLineEdit *)sender();
+        int *moveArray = createMoveArray("1", field->objectName());
+        QLabel *label = labels[moveArray[1]][moveArray[2]];
+
+        QString result = QInputDialog::getText(0, "Add Note", "Value:", QLineEdit::Normal, label->text());
+
+        label->setText(result);
+
+    }
 }
 
 void MainWindow::setMove(int* moveArray, bool isCurrent){
@@ -122,6 +146,13 @@ bool MainWindow::isFieldEnabled(int i, int j) {
     return fields[i][j]->isEnabled();
 }
 
+bool MainWindow::isNotesEnabled() {
+    return notesEnabled;
+}
+
+void MainWindow::setNotesEnabled(bool enabled) {
+    notesEnabled = enabled;
+}
 
 void MainWindow::createMenu()
 {
@@ -169,6 +200,13 @@ void MainWindow::createMenu()
         settingsAction->setEnabled(true);
         connect(settingsAction, SIGNAL(triggered()), this, SIGNAL(onHintPressed()));
         //TODO
+        enableNotes = settingsMenu->addAction("Enable Notes");
+        enableNotes->setEnabled(true);
+        connect(enableNotes, SIGNAL(triggered()), this, SIGNAL(onEnableNotesPressed()));
+
+        disableNotes = settingsMenu->addAction("Disable Notes");
+        disableNotes->setEnabled(false);
+        connect(disableNotes, SIGNAL(triggered()), this, SIGNAL(onEnableNotesPressed()));
     }
 }
 

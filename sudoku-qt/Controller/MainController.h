@@ -33,6 +33,7 @@ namespace Controller{
         void onGenerateBoard();
         void onClear();
         void onHint();
+        void onEnableNotes();
 
     signals:
         void setDefaultMove(int *moveArray);

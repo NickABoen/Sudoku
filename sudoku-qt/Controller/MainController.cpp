@@ -42,6 +42,7 @@ MainController::MainController(): QObject(NULL),
     connect(&view, SIGNAL(onMakeMove(int*)), this, SLOT(onMakeMove(int*)));
     connect(&view, SIGNAL(onGenerateBoardPressed()), this, SLOT(onGenerateBoard()));
     connect(&view, SIGNAL(onHintPressed()), this, SLOT(onHint()));
+    connect(&view, SIGNAL(onEnableNotesPressed()), this, SLOT(onEnableNotes()));
 
     view.centralWidget()->setEnabled(false);
 
@@ -398,6 +399,14 @@ void MainController::onHint(){
     int moveArray[3] = {puzzle->solvedBoard[x][y], x, y};
     view.setMove(moveArray, false);
 
+}
+
+void MainController::onEnableNotes() {
+    //need to set up a disable function as well. Will get there
+    bool enabled = view.isNotesEnabled();
+    view.setNotesEnabled(!enabled);
+    view.enableNotes->setEnabled(enabled);
+    view.disableNotes->setEnabled(!enabled);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
