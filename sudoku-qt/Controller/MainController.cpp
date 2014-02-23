@@ -332,15 +332,15 @@ void MainController::onGenerateBoardFromImage()
 
     puzzle = new Puzzle();
 
-    std::ofstream file;
-    file.open("ocr-output.txt");
+    //std::ofstream file;
+    //file.open("ocr-output.txt");
 
     //file << filePath.toStdString().c_str() << "\n";
 
     tesseract::TessBaseAPI *api = new tesseract::TessBaseAPI();
 
     // Initialize tesseract-ocr with English, without specifying tessdata path
-    if (api->Init("C:\\Users\\Logan\\Desktop\\tesseract-ocr", "eng") == -1)
+    if (api->Init("tesseract-ocr", "eng") == -1)
     {
         //TODO error handling
 
@@ -444,13 +444,6 @@ void MainController::onGenerateBoardFromImage()
     BoardSolver boardSolver(ConvertedBoard);
     puzzle->solvedBoard = boardGenerator->ConvertBoard(boardSolver.Solve());
 
-    for (int i = 0; i < 9; i++) {
-        for (int j = 0; j < 9; j++) {
-            file << puzzle->solvedBoard[j][i] << ",";
-        }
-        file << "\n";
-    }
-
     enableUndoRedo = false;
     displayDefaultBoard();
     enableUndoRedo = true;
@@ -468,7 +461,7 @@ void MainController::onGenerateBoardFromImage()
 //        file << outText;
 //    }
 
-    file.close();
+    //file.close();
 }
 
 void MainController::onHint(){

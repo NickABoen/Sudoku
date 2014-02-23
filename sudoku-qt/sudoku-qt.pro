@@ -35,8 +35,3 @@ LIBS += $$PWD/Lib/opencv_core248.lib\
         $$PWD/Lib/opencv_imgproc248.lib\
         $$PWD/Lib/libtesseract302.lib
 
-
-#LIBS += -L$$PWD/Lib\
-#        -lopencv_core248\
-#        -lopencv_highgui248\
-#        -llibtesseract302
