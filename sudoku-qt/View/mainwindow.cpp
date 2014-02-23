@@ -140,6 +140,9 @@ void MainWindow::createMenu()
         QAction *generateBoardAction = fileMenu->addAction("Generate Board");
         connect(generateBoardAction, SIGNAL(triggered()), this, SIGNAL(onGenerateBoardPressed()));
 
+        QAction *generateBoardFromImageAction = fileMenu->addAction("Generate Board From Image");
+        connect(generateBoardFromImageAction, SIGNAL(triggered()), this, SIGNAL(onGenerateBoardFromImagePressed()));
+
         QAction *exitAction = fileMenu->addAction("Exit");
         connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
     }

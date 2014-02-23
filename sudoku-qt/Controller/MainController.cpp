@@ -1,16 +1,30 @@
 #include "MainController.h"
 #include "difficultyselector.h"
 #include "BoardGenerator.h"
+#include "BoardSolver.h"
 #include "Move.h"
 #include "Puzzle.h"
 #include "../test.h"
+//Tesseract includes
+#include "baseapi.h"
+//OpenCV includes
+#include "core.hpp"
+#include "highgui.hpp"
+#include "imgproc/imgproc.hpp"
 
+//TODO Temp Includes Remove
+#include <iostream>
+#include <fstream>
+
+
+#include <string>
 #include <QDebug>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QAbstractButton>
 #include <QAction>
 #include <QPushButton>
+#include <QLibrary>
 
 extern bool test;
 extern std::ofstream testfile;
@@ -41,6 +55,7 @@ MainController::MainController(): QObject(NULL),
     connect(&view, SIGNAL(onLoadProgressPressed()), this, SLOT(onLoadProgress()));
     connect(&view, SIGNAL(onMakeMove(int*)), this, SLOT(onMakeMove(int*)));
     connect(&view, SIGNAL(onGenerateBoardPressed()), this, SLOT(onGenerateBoard()));
+    connect(&view, SIGNAL(onGenerateBoardFromImagePressed()), this, SLOT(onGenerateBoardFromImage()));
 
     view.centralWidget()->setEnabled(false);
 
@@ -105,66 +120,32 @@ void MainController::onLoadProgress() {
 
     QString filePath;
     QFileDialog* fileDialog = new QFileDialog(&view, "Load Progress", "", "*.*");
+
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first();
-    if(filePath != "")
-    {
-        if(test) testfile << "MC8  FilePath is not empty\n";
-        if(puzzle != NULL){
-            if(test) testfile << "MC36 Puzzle is not NULL\n";
-            //User started game, do they want to save progress?
-            QMessageBox msgBox;
-            msgBox.setText("You have unsaved progress.");
-            msgBox.setInformativeText("Do you want to save your progress?");
-            msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-            msgBox.setDefaultButton(QMessageBox::Save);
-            int ret = msgBox.exec();
+    if(filePath == "") return;
 
-            if(ret == msgBox.Save){
-                if(test) testfile << "MC37 MessageBox save button clicked\n";
-                //Save user progress
-                onSaveProgress();
-            }
-            else if(ret == msgBox.Discard){
-                if(test) testfile << "MC38 MessageBox discard button clicked\n";
-                //Discard user progress
-                //Do nothing
-            }
-            else if(ret == msgBox.Cancel){
-                if(test) testfile << "MC39 MessageBox cancel button clicked\n";
-                //Don't save or discard progress
-                return;
-            }
+    if(!checkIfUnsavedProgressAndReset()) return;
 
-            //User done saving/discarding game, clear board and delete puzzle
-            view.clearBoard();
-            delete puzzle;
-        }
+    puzzle = currentProgressSerializer.deserialize(filePath, puzzleSerializer);
 
-        puzzle = currentProgressSerializer.deserialize(filePath, puzzleSerializer);
+    //Display the default and current board
+    enableUndoRedo = false;
+    displayDefaultBoard();
+    displayCurrentBoard();
+    enableUndoRedo = true;
 
-        //Display the default and current board
-        enableUndoRedo = false;
-        displayDefaultBoard();
-        displayCurrentBoard();
-        enableUndoRedo = true;
-
-        if(puzzle->undo.count() > 0){
-            if(test) testfile << "MC9  Puzzle undo count > 0\n";
-            view.clearAction->setEnabled(true);
-            view.undoAction->setEnabled(true);
-        }
-        if(puzzle->redo.count() > 0){
-            if(test) testfile << "MC10 Puzzle redo count > 0\n";
-            view.redoAction->setEnabled(true);
-        }
-
-        view.centralWidget()->setEnabled(true);
-    } 
-    else{
-        if(test) testfile << "MC11 Filepath was empty\n";
-        //Popup error message...
-        //TODO
+    if(puzzle->undo.count() > 0){
+        if(test) testfile << "MC9  Puzzle undo count > 0\n";
+        view.clearAction->setEnabled(true);
+        view.undoAction->setEnabled(true);
     }
+    if(puzzle->redo.count() > 0){
+        if(test) testfile << "MC10 Puzzle redo count > 0\n";
+        view.redoAction->setEnabled(true);
+    }
+
+    view.centralWidget()->setEnabled(true);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -199,57 +180,22 @@ void MainController::onLoadPuzzle(){
 
     QString filePath;
     QFileDialog* fileDialog = new QFileDialog(&view, "Load Puzzle", "", "*.*");
-    if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first(); //If user specifies more than one file only take first??
-    if(filePath != "")
-    {
-        if(test) testfile << "MC16 FilePath is not empty\n";
-        if(puzzle != NULL){
-            if(test) testfile << "MC17 Puzzle is not NULL\n";
-            //User started game, do they want to save progress?
-            QMessageBox msgBox;
-            msgBox.setText("You have unsaved progress.");
-            msgBox.setInformativeText("Do you want to save your progress?");
-            msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-            msgBox.setDefaultButton(QMessageBox::Save);
-            int ret = msgBox.exec();
+    if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first();
+    if(filePath == "") return;
 
-            if(ret == msgBox.Save){
-                if(test) testfile << "MC18 MessageBox save button clicked\n";
-                //Save user progress
-                onSaveProgress();
-            }
-            else if(ret == msgBox.Discard){
-                if(test) testfile << "MC19 MessageBox discard button clicked\n";
-                //Discard user progress
-                //Do nothing
-            }
-            else if(ret == msgBox.Cancel){
-                if(test) testfile << "MC20 MessageBox cancel button clicked\n";
-                //Don't save or discard progress
-                return;
-            }
+    if(!checkIfUnsavedProgressAndReset()) return;
 
-            //User done saving/discarding game, clear board and delete puzzle
-            view.clearBoard();
-            delete puzzle;
-        }
-        puzzle = puzzleSerializer.deserialize(filePath);
+    puzzle = puzzleSerializer.deserialize(filePath);
 
-        enableUndoRedo = false;
-        displayDefaultBoard();
-        enableUndoRedo = true;
+    enableUndoRedo = false;
+    displayDefaultBoard();
+    enableUndoRedo = true;
 
-        view.centralWidget()->setEnabled(true);
+    view.centralWidget()->setEnabled(true);
 
-        view.undoAction->setEnabled(false);
-        view.redoAction->setEnabled(false);
-        view.clearAction->setEnabled(false);
-    }
-    else{
-        if(test) testfile << "MC21 Filepath was empty\n";
-        //Popup error message...
-        //TODO
-    }
+    view.undoAction->setEnabled(false);
+    view.redoAction->setEnabled(false);
+    view.clearAction->setEnabled(false);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -329,35 +275,14 @@ void MainController::onMakeMove(int* moveArray){
 //////////////////////////////////////////////////////////////////////////////////
 // This function is called to generate a new puzzle.
 //////////////////////////////////////////////////////////////////////////////////
-void MainController::onGenerateBoard(){
+void MainController::onGenerateBoard()
+{
+
     DifficultySelector *DS = new DifficultySelector();
     BoardGenerator *BG = new BoardGenerator();
-    if(puzzle != NULL){
-        //User started game, do they want to save progress?
-        QMessageBox msgBox;
-        msgBox.setText("You have unsaved progress.");
-        msgBox.setInformativeText("Do you want to save your progress?");
-        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Save);
-        int ret = msgBox.exec();
 
-        if(ret == msgBox.Save){
-            //Save user progress
-            onSavePuzzle();
-        }
-        else if(ret == msgBox.Discard){
-            //Discard user progress
-            //Do nothing
-        }
-        else if(ret == msgBox.Cancel){
-            //Don't save or discard progress
-            return;
-        }
+    if(!checkIfUnsavedProgressAndReset()) return;
 
-        //User done saving/discarding game, clear board and delete puzzle
-        view.clearBoard();
-        delete puzzle;
-    }
     puzzle = new Puzzle();
     DS->setFixedSize(192,145);
     DS->exec();
@@ -370,6 +295,157 @@ void MainController::onGenerateBoard(){
     QMessageBox msgbox;
     msgbox.setInformativeText(tmp);
     msgbox.exec();*/
+}
+
+void MainController::onGenerateBoardFromImage()
+{
+    QString filePath;
+    QFileDialog* fileDialog = new QFileDialog(&view, "Board Image", "", "*.*");
+
+    if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first();
+    if(filePath == "") return;
+
+    if(!checkIfUnsavedProgressAndReset()) return;
+
+    puzzle = new Puzzle();
+
+    std::ofstream file;
+    file.open("ocr-output.txt");
+
+    //file << filePath.toStdString().c_str() << "\n";
+
+    tesseract::TessBaseAPI *api = new tesseract::TessBaseAPI();
+
+    // Initialize tesseract-ocr with English, without specifying tessdata path
+    if (api->Init("C:\\Users\\Logan\\Desktop\\tesseract-ocr", "eng") == -1)
+    {
+        //TODO error handling
+
+    }
+
+    // Set to only recognize numbers
+    api->SetVariable("tessedit_char_whitelist", "0123456789");
+
+    // Open input image with OpenCV
+    cv::Mat src = cv::imread(filePath.toStdString());
+    if(src.empty())
+    {
+        //TODO error handling
+        return;
+    }
+
+//    cv::vector<cv::Mat> channels;
+//    cv::split(src, channels);
+//    cv::Scalar m = cv::mean(channels[0]);
+
+//    src = channels[0];
+
+    //Set src image grey and threshold to binary image
+    cv::cvtColor(src, src, CV_BGR2GRAY);
+    cv::imwrite("grey.png", src);
+
+//    cv::adaptiveThreshold(src, src, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C , cv::THRESH_BINARY, 25, 50);
+//    cv::imwrite("afterThreshold.png", src);
+
+    // Remove lines that are close to height/width of image,
+    // basically remove grid so that only numbers are left for
+    // tesseract to detect.
+
+    cv::Mat cranny;
+
+    cv::Canny(src, cranny, 50, 200, 3);
+    //cv::imwrite("Canny.png", cranny);
+    cv::vector<cv::Vec4i> lines;
+    cv::HoughLinesP(cranny, lines, 1, CV_PI/180, 50, 50, 10 );
+
+    for( size_t i = 0; i < lines.size(); i++ )
+    {
+        cv::Vec4i l = lines[i];
+        cv::line( src, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(255,255,255), 3, CV_AA);
+    }
+
+   // cv::imwrite("AfterLinesRemoved.png", src);
+
+    api->SetImage((uchar*)src.data, src.size().width,
+                  src.size().height, src.channels(), src.step1());
+
+
+
+    char *boxtext = api->GetBoxText(0);
+
+    // Destroy used object and release memory
+    api->End();
+
+    int cellWidth = src.size().width/9;
+    int cellHeight = src.size().height/9;
+
+    std::istringstream boxTextStream(boxtext);
+
+    puzzle = new Puzzle();
+
+    //file << "Parsed box text...\n";
+    while (!boxTextStream.eof())
+    {
+       int left, right, top, bottom, value, trash;
+
+       boxTextStream >> value >> left >> bottom >> right >> top >> trash;
+
+       //TODO for some reason it reads in the last line twice...
+
+       float x1 = left / cellWidth;
+       float x2 = right / cellWidth;
+       float y1 = bottom / cellHeight;
+       float y2 = top / cellHeight;
+
+       if((1 - (x1 - (int)x1)) < (x2 - (int)x2)) x1 = x2;
+       if((1 - (y1 - (int)y1)) < (y2 - (int)y2)) y1 = y2;
+       puzzle->defaultBoard[(int)x1][8 - (int)y1] = value;
+    }
+
+
+    //TODO fix this
+    int** ConvertedBoard = new int*[9];
+    for(int i = 0; i < 9; i++){
+        ConvertedBoard[i] = new int[9];
+    }
+    for(int i = 0; i<9;i++){
+        for(int j = 0; j<9; j++){
+            int row = 3*(i/3)+j/3;
+            int column = 3*(i%3)+j%3;
+            ConvertedBoard[i][j] = puzzle->defaultBoard[row][column];
+        }
+    }
+
+    BoardGenerator*  boardGenerator = new BoardGenerator();
+
+    BoardSolver boardSolver(ConvertedBoard);
+    puzzle->solvedBoard = boardGenerator->ConvertBoard(boardSolver.Solve());
+
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+            file << puzzle->solvedBoard[j][i] << ",";
+        }
+        file << "\n";
+    }
+
+    enableUndoRedo = false;
+    displayDefaultBoard();
+    enableUndoRedo = true;
+
+    view.centralWidget()->setEnabled(true);
+
+    view.undoAction->setEnabled(false);
+    view.redoAction->setEnabled(false);
+    view.clearAction->setEnabled(false);
+
+
+
+//    file << "OCR output:\n";
+//    if(outText != NULL){
+//        file << outText;
+//    }
+
+    file.close();
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -442,4 +518,36 @@ void MainController::onClear(){
     view.undoAction->setEnabled(false);
     view.redoAction->setEnabled(false);
     view.clearAction->setEnabled(false);
+}
+
+bool MainController::checkIfUnsavedProgressAndReset()
+{
+    if(puzzle != NULL){
+        //User started game, do they want to save progress?
+        QMessageBox msgBox;
+        msgBox.setText("You have unsaved progress.");
+        msgBox.setInformativeText("Do you want to save your progress?");
+        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Save);
+        int ret = msgBox.exec();
+
+        if(ret == msgBox.Save){
+            //Save user progress
+            onSavePuzzle();
+        }
+        else if(ret == msgBox.Discard){
+            //Discard user progress
+            //Do nothing
+        }
+        else if(ret == msgBox.Cancel){
+            //Don't save or discard progress
+            return false;
+        }
+
+        //User done saving/discarding game, clear board and delete puzzle
+        view.clearBoard();
+        delete puzzle;
+
+    }
+    return true;
 }

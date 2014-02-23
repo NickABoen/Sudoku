@@ -19,12 +19,24 @@ include(Model/Model.pri)
 include(View/View.pri)
 include(Controller/Controller.pri)
 
+
 INCLUDEPATH += $$PWD/Model\
                $$PWD/View\
-               $$PWD/Controller
+               $$PWD/Controller\
+               $$PWD/Lib
 
 DEPENDPATH += $$PWD/Model\
               $$PWD/View\
-              $$PWD/Controller
+              $$PWD/Controller\
+              $$PWD/Lib
 
-FORMS +=
+LIBS += $$PWD/Lib/opencv_core248.lib\
+        $$PWD/Lib/opencv_highgui248.lib\
+        $$PWD/Lib/opencv_imgproc248.lib\
+        $$PWD/Lib/libtesseract302.lib
+
+
+#LIBS += -L$$PWD/Lib\
+#        -lopencv_core248\
+#        -lopencv_highgui248\
+#        -llibtesseract302

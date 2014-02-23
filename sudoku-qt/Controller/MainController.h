@@ -31,6 +31,7 @@ namespace Controller{
         void onUndoMove();
         void onRedoMove();
         void onGenerateBoard();
+        void onGenerateBoardFromImage();
         void onClear();
 
     signals:
@@ -39,6 +40,7 @@ namespace Controller{
     private:
         void displayDefaultBoard();
         void displayCurrentBoard();
+        bool checkIfUnsavedProgressAndReset();
 
         Model::Puzzle* puzzle;
         Model::CurrentProgressSerializer currentProgressSerializer;
