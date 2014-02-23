@@ -33,6 +33,10 @@ namespace Controller{
         void onGenerateBoard();
         void onGenerateBoardFromImage();
         void onClear();
+        void onHint();
+        void onEnableNotes();
+        void onClues();
+        void giveClues();
 
     signals:
         void setDefaultMove(int *moveArray);
@@ -41,7 +45,9 @@ namespace Controller{
         void displayDefaultBoard();
         void displayCurrentBoard();
         bool checkIfUnsavedProgressAndReset();
+        bool clueTimer;
 
+        QTimer *timer;
         Model::Puzzle* puzzle;
         Model::CurrentProgressSerializer currentProgressSerializer;
         Model::PuzzleSerializer puzzleSerializer;

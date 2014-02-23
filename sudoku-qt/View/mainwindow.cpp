@@ -16,7 +16,6 @@ MainWindow::MainWindow(QWidget *parent) :
     int pad = 20;
     int seperatorWidth = 2;
     int squareSize = 60;
-
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
 
@@ -33,6 +32,17 @@ MainWindow::MainWindow(QWidget *parent) :
             field->setAlignment(Qt::AlignCenter);
             field->setStyleSheet("font: 28pt;");
 
+            labels[i][j] = new QLabel(ui->centralWidget);
+            QLabel *label = labels[i][j];
+            label->setEnabled(true);
+            label->setGeometry(i*squareSize + i/3*seperatorWidth + pad,
+                               j*squareSize + j/3*seperatorWidth + pad,
+                               squareSize,
+                               squareSize/4);
+            label->setText("");
+
+
+            connect(field, SIGNAL(selectionChanged()), this, SLOT(fieldFocused()));
             connect(field, SIGNAL(textChanged(QString)),this,SLOT(fieldChanged(QString)));
 
         }
@@ -74,6 +84,19 @@ void MainWindow::fieldChanged(QString text)
     emit onMakeMove(moveArray);
 }
 
+void MainWindow::fieldFocused() {
+    if (isNotesEnabled()) {
+        QLineEdit *field = (QLineEdit *)sender();
+        int *moveArray = createMoveArray("1", field->objectName());
+        QLabel *label = labels[moveArray[1]][moveArray[2]];
+
+        QString result = QInputDialog::getText(0, "Add Note", "Value:", QLineEdit::Normal, label->text());
+
+        label->setText(result);
+
+    }
+}
+
 void MainWindow::setMove(int* moveArray, bool isCurrent){
     int value = moveArray[0];
     int x = moveArray[1];
@@ -93,12 +116,16 @@ void MainWindow::makeMove(int* moveArray){
         fields[x][y]->setText("");
     }
 }
+void MainWindow::clearMove(int x, int y){
+
+    fields[x][y]->setEnabled(true);
+    fields[x][y]->setText("");
+}
 
 void MainWindow::clearBoard(){
     for(int i = 0; i < 9; i++){
         for(int j = 0; j < 9; j++){
-            fields[i][j]->setEnabled(true);
-            fields[i][j]->setText("");
+            clearMove(i, j);
         }
     }
 }
@@ -118,6 +145,17 @@ int * MainWindow::createMoveArray(QString text, QString fieldname) {
     return loc;
 }
 
+bool MainWindow::isFieldEnabled(int i, int j) {
+    return fields[i][j]->isEnabled();
+}
+
+bool MainWindow::isNotesEnabled() {
+    return notesEnabled;
+}
+
+void MainWindow::setNotesEnabled(bool enabled) {
+    notesEnabled = enabled;
+}
 
 void MainWindow::createMenu()
 {
@@ -164,9 +202,21 @@ void MainWindow::createMenu()
 
     QMenu *settingsMenu = ui->menuBar->addMenu("Settings");
     {
-        QAction *settingsAction = settingsMenu->addAction("Settings");
-        settingsAction->setEnabled(false);//Not implemented in this phase
+        QAction *settingsAction = settingsMenu->addAction("Hints");
+        settingsAction->setEnabled(true);
+        connect(settingsAction, SIGNAL(triggered()), this, SIGNAL(onHintPressed()));
         //TODO
+        enableNotes = settingsMenu->addAction("Enable Notes");
+        enableNotes->setEnabled(true);
+        connect(enableNotes, SIGNAL(triggered()), this, SIGNAL(onEnableNotesPressed()));
+
+        disableNotes = settingsMenu->addAction("Disable Notes");
+        disableNotes->setEnabled(false);
+        connect(disableNotes, SIGNAL(triggered()), this, SIGNAL(onEnableNotesPressed()));
+
+        clue = settingsMenu->addAction("Clues");
+        clue->setEnabled(true);
+        connect(clue, SIGNAL(triggered()), this, SIGNAL(onCluePressed()));
     }
 }
 

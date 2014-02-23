@@ -25,7 +25,8 @@
 #include <QAction>
 #include <QPushButton>
 #include <QLibrary>
-
+#include <QTimer>
+#include <QEventLoop>
 extern bool test;
 extern std::ofstream testfile;
 
@@ -44,7 +45,8 @@ MainController::MainController(): QObject(NULL),
     puzzleSerializer()
 {
     if(test) testfile << "MC1  ####################### MainController constructor #######################\n";
-
+    clueTimer = false;
+    timer = new QTimer(this);
     //Connect all signals and slots
     connect(&view, SIGNAL(onUndoPressed()), this, SLOT(onUndoMove()));
     connect(&view, SIGNAL(onRedoPressed()), this, SLOT(onRedoMove()));
@@ -56,6 +58,10 @@ MainController::MainController(): QObject(NULL),
     connect(&view, SIGNAL(onMakeMove(int*)), this, SLOT(onMakeMove(int*)));
     connect(&view, SIGNAL(onGenerateBoardPressed()), this, SLOT(onGenerateBoard()));
     connect(&view, SIGNAL(onGenerateBoardFromImagePressed()), this, SLOT(onGenerateBoardFromImage()));
+    connect(&view, SIGNAL(onHintPressed()), this, SLOT(onHint()));
+    connect(&view, SIGNAL(onEnableNotesPressed()), this, SLOT(onEnableNotes()));
+    connect(&view, SIGNAL(onCluePressed()), this, SLOT(onClues()));
+    connect(timer, SIGNAL(timeout()), this,SLOT(giveClues()));
 
     view.centralWidget()->setEnabled(false);
 
@@ -259,6 +265,7 @@ void MainController::onMakeMove(int* moveArray){
         msgBox.setInformativeText("Do you want to start a new puzzle or progress?");
         QAbstractButton *puzzleBtn = msgBox.addButton(trUtf8("Load Puzzle"), QMessageBox::YesRole);
         QAbstractButton *progressBtn = msgBox.addButton(trUtf8("Load Progress"), QMessageBox::NoRole);
+        QAbstractButton *generateBtn = msgBox.addButton(trUtf8("Generate Puzzle"), QMessageBox::NoRole);
         msgBox.exec();
 
         if(msgBox.clickedButton() == puzzleBtn){
@@ -269,6 +276,13 @@ void MainController::onMakeMove(int* moveArray){
             if(test) testfile << "MC40 MessageBox Load Progress button clicked\n";
             onLoadProgress();
         }
+        else if (msgBox.clickedButton() == generateBtn){
+            if(test) testfile << "MC40 MessageBox Load Progress button clicked\n";
+            onGenerateBoard();
+        }
+    }
+    else if(clueTimer==true){
+        timer->start(5000);
     }
 }
 
@@ -287,10 +301,19 @@ void MainController::onGenerateBoard()
     DS->setFixedSize(192,145);
     DS->exec();
     int res = DS->DS;
-    puzzle->defaultBoard = BG->ConvertBoard(BG->Generate(res));
-    puzzle->solvedBoard = BG->ConvertBoard(BG->FinalBoard);
-    displayDefaultBoard();
-    view.centralWidget()->setEnabled(true);
+    if(res > 0){
+        puzzle->defaultBoard = BG->ConvertBoard(BG->Generate(res));
+        puzzle->solvedBoard = BG->ConvertBoard(BG->FinalBoard);
+
+        enableUndoRedo = false;
+        displayDefaultBoard();
+        enableUndoRedo = true;
+
+        view.centralWidget()->setEnabled(true);
+        view.undoAction->setEnabled(false);
+        view.redoAction->setEnabled(false);
+        view.clearAction->setEnabled(false);
+    }
     /*QString tmp = QString::number(res);
     QMessageBox msgbox;
     msgbox.setInformativeText(tmp);
@@ -448,12 +471,60 @@ void MainController::onGenerateBoardFromImage()
     file.close();
 }
 
+void MainController::onHint(){
+    //this needs to be optimized.
+    int x = rand() % 9;
+    int y = rand() % 9;
+    while(puzzle->currentBoard[x][y] != 0){
+        x = rand() % 9;
+        y = rand() % 9;
+    }
+    int moveArray[3] = {puzzle->solvedBoard[x][y], x, y};
+    view.setMove(moveArray, false);
+
+}
+
+void MainController::onEnableNotes() {
+    //need to set up a disable function as well. Will get there
+    bool enabled = view.isNotesEnabled();
+    view.setNotesEnabled(!enabled);
+    view.enableNotes->setEnabled(enabled);
+    view.disableNotes->setEnabled(!enabled);
+}
+void MainController::onClues(){
+    clueTimer = true;
+}
+
+void MainController::giveClues(){
+
+    int x = rand() % 9;
+    int y = rand() % 9;
+    while(puzzle->currentBoard[x][y] != 0){
+        x = rand() % 9;
+        y = rand() % 9;
+    }
+    int moveArray[3] = {puzzle->solvedBoard[x][y], x, y};
+    view.setMove(moveArray, false);
+    QEventLoop loop;
+    QTimer::singleShot(1000, &loop, SLOT(quit()));
+    loop.exec();
+    view.clearMove(x,y);
+    timer->stop();
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 // This function is called when the last move needs to be undone.
 //////////////////////////////////////////////////////////////////////////////////
 void MainController::onUndoMove(){
 
     if(test) testfile << "MC31 ####################### MainController onUndoMove #######################\n";
+
+    Model::Move checkMove = puzzle->undo.top();
+    if (!view.isFieldEnabled(checkMove.x, checkMove.y)) {
+        //If the top value is locked (hints, etc), then remove it and don't use it.
+        puzzle->undo.pop();
+        if (puzzle->undo.isEmpty()) return;
+    }
 
     Model::Move undoMove = puzzle->undo.pop();
 

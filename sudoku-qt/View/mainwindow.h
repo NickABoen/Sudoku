@@ -6,6 +6,8 @@
 #include <QPushButton>
 #include <QString>
 #include <QAction>
+#include <QLabel>
+#include <QInputDialog>
 
 namespace Ui {
 class MainWindow;
@@ -21,12 +23,19 @@ namespace View {
         ~MainWindow();
 
         void makeMove(int *moveArray);
+        void clearMove(int, int);
         void setMove(int *moveArray, bool isCurrent);
         void clearBoard();
+        bool isFieldEnabled(int i, int j);
+        bool isNotesEnabled();
+        void setNotesEnabled(bool enabled);
 
         QAction *undoAction;
         QAction *redoAction;
         QAction *clearAction;
+        QAction *clue;
+        QAction *enableNotes;
+        QAction *disableNotes;
 
     signals:
         void onLoadProgressPressed();
@@ -39,16 +48,22 @@ namespace View {
         void onGenerateBoardPressed();
         void onClearPressed();
         void onGenerateBoardFromImagePressed();
+        void onHintPressed();
+        void onEnableNotesPressed();
+        void onCluePressed();
 
     private slots:
         void fieldChanged(QString text);
+        void fieldFocused();
 
     private:
         int * createMoveArray(QString text, QString fieldname);
         void createMenu();
 
+        bool notesEnabled;
         Ui::MainWindow *ui;
         QLineEdit *fields[9][9];
+        QLabel *labels[9][9];
     };
 }
 
