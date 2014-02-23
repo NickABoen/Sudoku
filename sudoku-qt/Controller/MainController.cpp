@@ -417,10 +417,8 @@ void MainController::onEnableNotes() {
 }
 void MainController::onClues(){
     clueTimer = true;
-    QMessageBox msgBox;
-    msgBox.setText("enabling clues");
-    msgBox.exec();
 }
+
 void MainController::giveClues(){
 
     int x = rand() % 9;
@@ -432,7 +430,7 @@ void MainController::giveClues(){
     int moveArray[3] = {puzzle->solvedBoard[x][y], x, y};
     view.setMove(moveArray, false);
     QEventLoop loop;
-    QTimer::singleShot(5000, &loop, SLOT(quit()));
+    QTimer::singleShot(1000, &loop, SLOT(quit()));
     loop.exec();
     view.clearMove(x,y);
     timer->stop();
@@ -449,6 +447,7 @@ void MainController::onUndoMove(){
     if (!view.isFieldEnabled(checkMove.x, checkMove.y)) {
         //If the top value is locked (hints, etc), then remove it and don't use it.
         puzzle->undo.pop();
+        if (puzzle->undo.isEmpty()) return;
     }
 
     Model::Move undoMove = puzzle->undo.pop();
