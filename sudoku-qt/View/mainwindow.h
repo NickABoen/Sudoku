@@ -23,6 +23,7 @@ namespace View {
         ~MainWindow();
 
         void makeMove(int *moveArray);
+        void clearMove(int, int);
         void setMove(int *moveArray, bool isCurrent);
         void clearBoard();
         bool isFieldEnabled(int i, int j);
@@ -32,7 +33,7 @@ namespace View {
         QAction *undoAction;
         QAction *redoAction;
         QAction *clearAction;
-
+        QAction *clue;
         QAction *enableNotes;
         QAction *disableNotes;
 
@@ -48,6 +49,7 @@ namespace View {
         void onClearPressed();
         void onHintPressed();
         void onEnableNotesPressed();
+        void onCluePressed();
 
     private slots:
         void fieldChanged(QString text);

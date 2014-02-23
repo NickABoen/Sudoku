@@ -16,7 +16,6 @@ MainWindow::MainWindow(QWidget *parent) :
     int pad = 20;
     int seperatorWidth = 2;
     int squareSize = 60;
-
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
 
@@ -117,12 +116,16 @@ void MainWindow::makeMove(int* moveArray){
         fields[x][y]->setText("");
     }
 }
+void MainWindow::clearMove(int x, int y){
+
+    fields[x][y]->setEnabled(true);
+    fields[x][y]->setText("");
+}
 
 void MainWindow::clearBoard(){
     for(int i = 0; i < 9; i++){
         for(int j = 0; j < 9; j++){
-            fields[i][j]->setEnabled(true);
-            fields[i][j]->setText("");
+            clearMove(i, j);
         }
     }
 }
@@ -207,6 +210,10 @@ void MainWindow::createMenu()
         disableNotes = settingsMenu->addAction("Disable Notes");
         disableNotes->setEnabled(false);
         connect(disableNotes, SIGNAL(triggered()), this, SIGNAL(onEnableNotesPressed()));
+
+        clue = settingsMenu->addAction("Clues");
+        clue->setEnabled(true);
+        connect(clue, SIGNAL(triggered()), this, SIGNAL(onCluePressed()));
     }
 }
 
