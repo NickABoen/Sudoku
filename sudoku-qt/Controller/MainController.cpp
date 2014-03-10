@@ -265,20 +265,7 @@ void MainController::onSavePuzzle(){
 
     if(test) testfile << "MC22 ####################### MainController onSavePuzzle #######################\n";
 
-    QString filePath;
-    QFileDialog* fileDialog = new QFileDialog();
-    filePath = fileDialog->getSaveFileName(&view, "Save file", "", "*.*");
-
-    if(filePath != "")
-    {
-        if(test) testfile << "MC23 FilePath is not empty\n";
-        puzzleSerializer.serialize(puzzle, filePath);
-    }
-    else{
-        if(test) testfile << "MC24 Filepath was empty\n";
-        //Popup error message...
-        //TODO
-    }
+    storeFilePath();
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -389,10 +376,7 @@ void MainController::onGenerateBoard(){
         view.redoAction->setEnabled(false);
         view.clearAction->setEnabled(false);
     }
-    /*QString tmp = QString::number(res);
-    QMessageBox msgbox;
-    msgbox.setInformativeText(tmp);
-    msgbox.exec();*/
+    storeFilePath();
 }
 
 void MainController::onHint(){
@@ -513,4 +497,21 @@ void MainController::onClear(){
     view.undoAction->setEnabled(false);
     view.redoAction->setEnabled(false);
     view.clearAction->setEnabled(false);
+}
+
+void MainController::storeFilePath() {
+    QString filePath;
+    QFileDialog* fileDialog = new QFileDialog();
+    filePath = fileDialog->getSaveFileName(&view, "Save file", "", "*.*");
+
+    if(filePath != "")
+    {
+        if(test) testfile << "MC23 FilePath is not empty\n";
+        puzzleSerializer.serialize(puzzle, filePath);
+    }
+    else{
+        if(test) testfile << "MC24 Filepath was empty\n";
+        //Popup error message...
+        //TODO
+    }
 }

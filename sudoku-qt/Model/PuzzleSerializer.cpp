@@ -51,6 +51,7 @@ void PuzzleSerializer::serialize(Puzzle* puzzle, QString filePath)
         }
         file << "\n";
     }
+    puzzle->filePathRef = filePath;
     file.close();
 }
 

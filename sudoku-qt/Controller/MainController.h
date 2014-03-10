@@ -49,6 +49,7 @@ namespace Controller{
         Model::CurrentProgressSerializer currentProgressSerializer;
         Model::PuzzleSerializer puzzleSerializer;
         View::MainWindow view;
+        void storeFilePath();
     };
 
 }
