@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QKeyEvent>
 #include <QMessageBox>
+#include <QShortcut>
 
 using namespace View;
 
@@ -72,6 +73,14 @@ MainWindow::MainWindow(QWidget *parent) :
     TIMER->setText("00:00:00");
     TIMER->setStyleSheet("font: bold 50px");
     TIMER->setGeometry(175, 560, 240,50);
+
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_U), this, SIGNAL(onUndoPressed()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R), this, SIGNAL(onRedoPressed()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_E), this, SIGNAL(onEnableNotesPressed()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this, SIGNAL(onCluePressed()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_T), this, SIGNAL(onHintPressed()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_G), this, SIGNAL(onGenerateBoardPressed()));
+
     createMenu();
 }
 
@@ -211,7 +220,7 @@ void MainWindow::createMenu()
         connect(clearAction, SIGNAL(triggered()), this, SIGNAL(onClearPressed()));
     }
 
-    QMenu *settingsMenu = ui->menuBar->addMenu("Settings");
+    QMenu *settingsMenu = ui->menuBar->addMenu("Options");
     {
         QAction *settingsAction = settingsMenu->addAction("Hints");
         settingsAction->setEnabled(true);
