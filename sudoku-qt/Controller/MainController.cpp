@@ -4,18 +4,8 @@
 #include "BoardSolver.h"
 #include "Move.h"
 #include "Puzzle.h"
+#include "ImagePuzzleGenerator.h"
 #include "../test.h"
-//Tesseract includes
-#include "baseapi.h"
-//OpenCV includes
-#include "core.hpp"
-#include "highgui.hpp"
-#include "imgproc/imgproc.hpp"
-
-//TODO Temp Includes Remove
-#include <iostream>
-#include <fstream>
-
 
 #include <string>
 #include <QDebug>
@@ -86,6 +76,8 @@ void MainController::displayDefaultBoard(){
 
     if(test) testfile << "MC3  ####################### MainController displayDefalutBoard #######################\n";
 
+    enableUndoRedo = false;
+
     //For all values in default board display on gui if non-zero
     for(int i = 0; i < 9; i++){
         for(int j = 0; j < 9; j++){
@@ -96,6 +88,12 @@ void MainController::displayDefaultBoard(){
             }
         }
     }
+    enableUndoRedo = true;
+
+    view.centralWidget()->setEnabled(true);
+    view.undoAction->setEnabled(false);
+    view.redoAction->setEnabled(false);
+    view.clearAction->setEnabled(false);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -104,6 +102,8 @@ void MainController::displayDefaultBoard(){
 void MainController::displayCurrentBoard(){
 
     if(test) testfile << "MC5  ####################### MainController displayCurrentBoard #######################\n";
+
+    enableUndoRedo = false;
 
     //For all values in current board display on gui if not a default value
     for(int i = 0; i < 9; i++){
@@ -114,6 +114,18 @@ void MainController::displayCurrentBoard(){
                 view.setMove(moveArray, true);
             }
         }
+    }
+
+    enableUndoRedo = true;
+
+    if(puzzle->undo.count() > 0){
+        if(test) testfile << "MC9  Puzzle undo count > 0\n";
+        view.clearAction->setEnabled(true);
+        view.undoAction->setEnabled(true);
+    }
+    if(puzzle->redo.count() > 0){
+        if(test) testfile << "MC10 Puzzle redo count > 0\n";
+        view.redoAction->setEnabled(true);
     }
 }
 
@@ -135,23 +147,8 @@ void MainController::onLoadProgress() {
     puzzle = currentProgressSerializer.deserialize(filePath, puzzleSerializer);
 
     //Display the default and current board
-    enableUndoRedo = false;
     displayDefaultBoard();
     displayCurrentBoard();
-    enableUndoRedo = true;
-
-    if(puzzle->undo.count() > 0){
-        if(test) testfile << "MC9  Puzzle undo count > 0\n";
-        view.clearAction->setEnabled(true);
-        view.undoAction->setEnabled(true);
-    }
-    if(puzzle->redo.count() > 0){
-        if(test) testfile << "MC10 Puzzle redo count > 0\n";
-        view.redoAction->setEnabled(true);
-    }
-
-    view.centralWidget()->setEnabled(true);
-
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -193,15 +190,7 @@ void MainController::onLoadPuzzle(){
 
     puzzle = puzzleSerializer.deserialize(filePath);
 
-    enableUndoRedo = false;
     displayDefaultBoard();
-    enableUndoRedo = true;
-
-    view.centralWidget()->setEnabled(true);
-
-    view.undoAction->setEnabled(false);
-    view.redoAction->setEnabled(false);
-    view.clearAction->setEnabled(false);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -305,14 +294,7 @@ void MainController::onGenerateBoard()
         puzzle->defaultBoard = BG->ConvertBoard(BG->Generate(res));
         puzzle->solvedBoard = BG->ConvertBoard(BG->FinalBoard);
 
-        enableUndoRedo = false;
         displayDefaultBoard();
-        enableUndoRedo = true;
-
-        view.centralWidget()->setEnabled(true);
-        view.undoAction->setEnabled(false);
-        view.redoAction->setEnabled(false);
-        view.clearAction->setEnabled(false);
     }
     /*QString tmp = QString::number(res);
     QMessageBox msgbox;
@@ -330,138 +312,22 @@ void MainController::onGenerateBoardFromImage()
 
     if(!checkIfUnsavedProgressAndReset()) return;
 
-    puzzle = new Puzzle();
+    ImagePuzzleGenerator gen;
 
-    //std::ofstream file;
-    //file.open("ocr-output.txt");
+    puzzle = gen.generate(filePath);
 
-    //file << filePath.toStdString().c_str() << "\n";
-
-    tesseract::TessBaseAPI *api = new tesseract::TessBaseAPI();
-
-    // Initialize tesseract-ocr with English, without specifying tessdata path
-    if (api->Init("tesseract-ocr", "eng") == -1)
+    if(puzzle == NULL)
     {
-        //TODO error handling
+        QMessageBox msgBox;
+        msgBox.setText("ERROR: Unable to generate puzzle from image.");
+        msgBox.setInformativeText("Please try again with another image.");
+        msgBox.addButton(trUtf8("Ok"), QMessageBox::YesRole);
+        msgBox.exec();
 
-    }
-
-    // Set to only recognize numbers
-    api->SetVariable("tessedit_char_whitelist", "0123456789");
-
-    // Open input image with OpenCV
-    cv::Mat src = cv::imread(filePath.toStdString());
-    if(src.empty())
-    {
-        //TODO error handling
         return;
     }
 
-//    cv::vector<cv::Mat> channels;
-//    cv::split(src, channels);
-//    cv::Scalar m = cv::mean(channels[0]);
-
-//    src = channels[0];
-
-    //Set src image grey and threshold to binary image
-    cv::cvtColor(src, src, CV_BGR2GRAY);
-    cv::imwrite("grey.png", src);
-
-//    cv::adaptiveThreshold(src, src, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C , cv::THRESH_BINARY, 25, 50);
-//    cv::imwrite("afterThreshold.png", src);
-
-    // Remove lines that are close to height/width of image,
-    // basically remove grid so that only numbers are left for
-    // tesseract to detect.
-
-    cv::Mat cranny;
-
-    cv::Canny(src, cranny, 50, 200, 3);
-    //cv::imwrite("Canny.png", cranny);
-    cv::vector<cv::Vec4i> lines;
-    cv::HoughLinesP(cranny, lines, 1, CV_PI/180, 50, 50, 10 );
-
-    for( size_t i = 0; i < lines.size(); i++ )
-    {
-        cv::Vec4i l = lines[i];
-        cv::line( src, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(255,255,255), 3, CV_AA);
-    }
-
-   // cv::imwrite("AfterLinesRemoved.png", src);
-
-    api->SetImage((uchar*)src.data, src.size().width,
-                  src.size().height, src.channels(), src.step1());
-
-
-
-    char *boxtext = api->GetBoxText(0);
-
-    // Destroy used object and release memory
-    api->End();
-
-    int cellWidth = src.size().width/9;
-    int cellHeight = src.size().height/9;
-
-    std::istringstream boxTextStream(boxtext);
-
-    puzzle = new Puzzle();
-
-    //file << "Parsed box text...\n";
-    while (!boxTextStream.eof())
-    {
-       int left, right, top, bottom, value, trash;
-
-       boxTextStream >> value >> left >> bottom >> right >> top >> trash;
-
-       //TODO for some reason it reads in the last line twice...
-
-       float x1 = left / cellWidth;
-       float x2 = right / cellWidth;
-       float y1 = bottom / cellHeight;
-       float y2 = top / cellHeight;
-
-       if((1 - (x1 - (int)x1)) < (x2 - (int)x2)) x1 = x2;
-       if((1 - (y1 - (int)y1)) < (y2 - (int)y2)) y1 = y2;
-       puzzle->defaultBoard[(int)x1][8 - (int)y1] = value;
-    }
-
-
-    //TODO fix this
-    int** ConvertedBoard = new int*[9];
-    for(int i = 0; i < 9; i++){
-        ConvertedBoard[i] = new int[9];
-    }
-    for(int i = 0; i<9;i++){
-        for(int j = 0; j<9; j++){
-            int row = 3*(i/3)+j/3;
-            int column = 3*(i%3)+j%3;
-            ConvertedBoard[i][j] = puzzle->defaultBoard[row][column];
-        }
-    }
-
-    BoardGenerator*  boardGenerator = new BoardGenerator();
-
-    BoardSolver boardSolver(ConvertedBoard);
-    puzzle->solvedBoard = boardGenerator->ConvertBoard(boardSolver.Solve());
-
-    enableUndoRedo = false;
     displayDefaultBoard();
-    enableUndoRedo = true;
-
-    view.centralWidget()->setEnabled(true);
-
-    view.undoAction->setEnabled(false);
-    view.redoAction->setEnabled(false);
-    view.clearAction->setEnabled(false);
-
-
-
-//    file << "OCR output:\n";
-//    if(outText != NULL){
-//        file << outText;
-//    }
-
-    //file.close();
 }
 
 void MainController::onHint(){
@@ -565,7 +431,7 @@ void MainController::onRedoMove(){
 }
 
 //////////////////////////////////////////////////////////////////////////////////
-// This function is called when the current board, and undo and redo stacks needs
+// This function is called when the current board and undo and redo stacks needs
 // to be cleared.
 //////////////////////////////////////////////////////////////////////////////////
 void MainController::onClear(){
@@ -575,13 +441,6 @@ void MainController::onClear(){
     // Clear everything
     view.clearBoard();
     displayDefaultBoard();
-
-    puzzle->undo.clear();
-    puzzle->redo.clear();
-
-    view.undoAction->setEnabled(false);
-    view.redoAction->setEnabled(false);
-    view.clearAction->setEnabled(false);
 }
 
 bool MainController::checkIfUnsavedProgressAndReset()
