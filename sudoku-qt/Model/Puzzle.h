@@ -22,6 +22,7 @@ namespace Model{
         int** currentBoard;
         int** defaultBoard;
         int** solvedBoard;
+        int currentTime;
 
         QStack<Model::Move> undo;
         QStack<Model::Move> redo;

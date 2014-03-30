@@ -8,6 +8,7 @@
 #include <QAction>
 #include <QLabel>
 #include <QInputDialog>
+#include <QElapsedTimer>
 
 namespace Ui {
 class MainWindow;
@@ -29,6 +30,8 @@ namespace View {
         bool isFieldEnabled(int i, int j);
         bool isNotesEnabled();
         void setNotesEnabled(bool enabled);
+        void changeColor(int x, int y);
+        void resetColor(int x, int y);
 
         QAction *undoAction;
         QAction *redoAction;
@@ -36,6 +39,7 @@ namespace View {
         QAction *clue;
         QAction *enableNotes;
         QAction *disableNotes;
+        QLabel *TIMER;
 
     signals:
         void onLoadProgressPressed();

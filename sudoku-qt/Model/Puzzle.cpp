@@ -13,11 +13,11 @@ Puzzle::Puzzle():
     defaultBoard(new int*[9]),
     solvedBoard(new int*[9]),
     undo(),
-    redo()
+    redo(),
+    currentTime(0)
 {
 
     if(test) testfile << "P1  ####################### Puzzle constructor #######################\n";
-
     for(int i = 0; i < 9; ++i){
         currentBoard[i] = new int[9];
         defaultBoard[i] = new int[9];
