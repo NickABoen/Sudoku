@@ -13,9 +13,11 @@
 #include <QPushButton>
 #include <QTimer>
 #include <QEventLoop>
+#include <QThread>
+
 extern bool test;
 extern std::ofstream testfile;
-
+//typedef void(*functionPointer) ();
 using namespace Controller;
 
 bool clearRedoStack = true;
@@ -32,7 +34,7 @@ MainController::MainController(): QObject(NULL),
 {
     if(test) testfile << "MC1  ####################### MainController constructor #######################\n";
     clueTimer = false;
-    timer = new QTimer(this);
+    ctimer = new QTimer(this);
     //Connect all signals and slots
     connect(&view, SIGNAL(onUndoPressed()), this, SLOT(onUndoMove()));
     connect(&view, SIGNAL(onRedoPressed()), this, SLOT(onRedoMove()));
@@ -46,10 +48,11 @@ MainController::MainController(): QObject(NULL),
     connect(&view, SIGNAL(onHintPressed()), this, SLOT(onHint()));
     connect(&view, SIGNAL(onEnableNotesPressed()), this, SLOT(onEnableNotes()));
     connect(&view, SIGNAL(onCluePressed()), this, SLOT(onClues()));
-    connect(timer, SIGNAL(timeout()), this,SLOT(giveClues()));
+    connect(ctimer, SIGNAL(timeout()), this,SLOT(giveClues()));
 
     view.centralWidget()->setEnabled(false);
-
+    Clock = new GameTimer(&view);
+    Clock->setPuzzle(puzzle);
     //Show MainWindow
     view.show();
 }
@@ -108,7 +111,7 @@ void MainController::displayCurrentBoard(){
 void MainController::onLoadProgress() {
 
     if(test) testfile << "MC7  ####################### MainController onLoadProgress #######################\n";
-
+    Clock->paused = true;
     QString filePath;
     QFileDialog* fileDialog = new QFileDialog(&view, "Load Progress", "", "*.*");
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first();
@@ -149,6 +152,10 @@ void MainController::onLoadProgress() {
         puzzle = currentProgressSerializer.deserialize(filePath, puzzleSerializer);
 
         //Display the default and current board
+        Clock->setPuzzle(puzzle);
+        Clock->GTimer->restart();
+        Clock->paused = false;
+        Clock->start();
         enableUndoRedo = false;
         displayDefaultBoard();
         displayCurrentBoard();
@@ -180,6 +187,7 @@ void MainController::onSaveProgress(){
 
     if(test) testfile << "MC12 ####################### MainController onSaveProgress #######################\n";
 
+    Clock->paused = true;
     QString filePath;
     QFileDialog* fileDialog = new QFileDialog();
     filePath = fileDialog->getSaveFileName(&view, "Save file", "", "*.*");
@@ -194,6 +202,9 @@ void MainController::onSaveProgress(){
         //Popup error message...
         //TODO
     }
+    Clock->GTimer->restart();
+    Clock->setPuzzle(puzzle);
+    Clock->paused = false;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -241,6 +252,10 @@ void MainController::onLoadPuzzle(){
         }
         puzzle = puzzleSerializer.deserialize(filePath);
 
+        Clock->setPuzzle(puzzle);
+        Clock->GTimer->restart();
+        Clock->paused = false;
+        Clock->start();
         enableUndoRedo = false;
         displayDefaultBoard();
         enableUndoRedo = true;
@@ -323,7 +338,7 @@ void MainController::onMakeMove(int* moveArray){
         }
     }
     else if(clueTimer==true){
-        timer->start(5000);
+        ctimer->start(5000);
     }
 }
 
@@ -345,6 +360,11 @@ void MainController::onGenerateBoard(){
         if(ret == msgBox.Save){
             //Save user progress
             onSavePuzzle();
+            clueTimer = false;
+            qDebug() << "Setting Puzzle Time";
+            Clock->setPuzzle(puzzle);
+            Clock->paused = false;
+            Clock->start();
         }
         else if(ret == msgBox.Discard){
             //Discard user progress
@@ -375,8 +395,13 @@ void MainController::onGenerateBoard(){
         view.undoAction->setEnabled(false);
         view.redoAction->setEnabled(false);
         view.clearAction->setEnabled(false);
+        storeFilePath();
+        clueTimer = false;
+        qDebug() << "Setting Puzzle Time";
+        Clock->setPuzzle(puzzle);
+        Clock->paused = false;
+        Clock->start();
     }
-    storeFilePath();
 }
 
 void MainController::onHint(){
@@ -413,11 +438,13 @@ void MainController::giveClues(){
     }
     int moveArray[3] = {puzzle->solvedBoard[x][y], x, y};
     view.setMove(moveArray, false);
+    view.changeColor(x, y);
     QEventLoop loop;
-    QTimer::singleShot(1000, &loop, SLOT(quit()));
+    QTimer::singleShot(2500, &loop, SLOT(quit()));
     loop.exec();
     view.clearMove(x,y);
-    timer->stop();
+    view.resetColor(x, y);
+    ctimer->stop();
 }
 
 //////////////////////////////////////////////////////////////////////////////////

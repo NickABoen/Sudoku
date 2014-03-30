@@ -11,7 +11,8 @@ SOURCES += Model/CurrentProgressSerializer.cpp\
            Model/PuzzleSerializer.cpp\
            Model/Boardsolver.cpp \
            Model/PriorityQueue.cpp \
-           Model/BoardGenerator.cpp
+           Model/BoardGenerator.cpp \
+    Model/gametimer.cpp
 
 HEADERS += Model/CurrentProgressSerializer.h\
            Model/Move.h\
@@ -19,4 +20,5 @@ HEADERS += Model/CurrentProgressSerializer.h\
            Model/PuzzleSerializer.h \
            Model/BoardSolver.h \
            Model/PriorityQueue.h \
-           Model/BoardGenerator.h
+           Model/BoardGenerator.h \
+    Model/gametimer.h

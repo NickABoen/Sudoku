@@ -29,13 +29,13 @@ void CurrentProgressSerializer::serialize(Puzzle* puzzle, QString filePath){
 
     std::ofstream file;
     file.open(filePath.toLatin1());
-
     if (!puzzle->filePathRef.isEmpty()) {
         if(test) testfile << "CPS4  Puzzle filepath reference is not empty\n";
         //shouldn't be empty, but will mess up either way if it is.
         file << puzzle->filePathRef.toUtf8().constData();
         file << "\n\n";
     }
+    file << puzzle->currentTime<<"\n\n";
 
     // Write current board
     for (int i = 0; i < 9; i++) {
@@ -92,9 +92,14 @@ Puzzle* CurrentProgressSerializer::deserialize(QString filePath, PuzzleSerialize
     //Reopen original filepath, set current
 
     std::ifstream file(filePath.toLatin1());
+
     file >> refFilePath;
     file.ignore();
-
+    /*std::string time;
+    std::getline(file, time);
+    puzzle->currentTime = std::atoi(time.c_str());*/
+    file >> puzzle->currentTime;
+    file.ignore();
     // Read current board
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
