@@ -1,9 +1,11 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+
 #include <QDebug>
 #include <QKeyEvent>
-
+#include <QMessageBox>
+#include <QShortcut>
 
 using namespace View;
 
@@ -12,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+    this->resize(584, 660);
     int pad = 20;
     int seperatorWidth = 2;
     int squareSize = 60;
@@ -67,6 +69,17 @@ MainWindow::MainWindow(QWidget *parent) :
     line3->setFrameShape(QFrame::VLine);
     line3->setGeometry(6*squareSize+seperatorWidth + pad, 0 + pad, seperatorWidth, squareSize*9+seperatorWidth*2);
     line3->setLineWidth(seperatorWidth);
+    TIMER = new QLabel(ui->centralWidget);
+    TIMER->setText("00:00:00");
+    TIMER->setStyleSheet("font: bold 50px");
+    TIMER->setGeometry(175, 560, 240,50);
+
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_U), this, SIGNAL(onUndoPressed()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R), this, SIGNAL(onRedoPressed()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_E), this, SIGNAL(onEnableNotesPressed()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this, SIGNAL(onCluePressed()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_T), this, SIGNAL(onHintPressed()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_G), this, SIGNAL(onGenerateBoardPressed()));
 
     createMenu();
 }
@@ -156,6 +169,16 @@ bool MainWindow::isNotesEnabled() {
 void MainWindow::setNotesEnabled(bool enabled) {
     notesEnabled = enabled;
 }
+void MainWindow::changeColor(int x, int y)
+{
+    fields[x][y]->setStyleSheet("QLineEdit{color: white; background: red;font: 28pt;}");
+}
+void MainWindow::resetColor(int x, int y)
+{
+    //fields[x][y]->setStyleSheet("QLineEdit{color: black; background: white;font: 28pt;}");
+    fields[x][y]->setStyleSheet("");
+
+}
 
 void MainWindow::createMenu()
 {
@@ -200,7 +223,7 @@ void MainWindow::createMenu()
         connect(clearAction, SIGNAL(triggered()), this, SIGNAL(onClearPressed()));
     }
 
-    QMenu *settingsMenu = ui->menuBar->addMenu("Settings");
+    QMenu *settingsMenu = ui->menuBar->addMenu("Options");
     {
         QAction *settingsAction = settingsMenu->addAction("Hints");
         settingsAction->setEnabled(true);

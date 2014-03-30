@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QStack>
 #include <QString>
+#include <QElapsedTimer>
+#include <QThread>
 
 #include "Move.h"
 #include "Puzzle.h"
@@ -11,6 +13,7 @@
 #include "CurrentProgressSerializer.h"
 #include "mainwindow.h"
 #include "difficultyselector.h"
+#include "gametimer.h"
 
 namespace Controller{
 
@@ -47,11 +50,13 @@ namespace Controller{
         bool checkIfUnsavedProgressAndReset();
         bool clueTimer;
 
-        QTimer *timer;
+        QTimer *ctimer;
         Model::Puzzle* puzzle;
         Model::CurrentProgressSerializer currentProgressSerializer;
         Model::PuzzleSerializer puzzleSerializer;
         View::MainWindow view;
+        void storeFilePath();
+        Model::GameTimer *Clock;
     };
 
 }

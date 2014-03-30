@@ -3,6 +3,7 @@
 
 #include "PuzzleSerializer.h"
 #include "../test.h"
+#include "qdebug.h"
 
 using namespace Model;
 
@@ -31,7 +32,6 @@ void PuzzleSerializer::serialize(Puzzle* puzzle, QString filePath)
 {
 
     if(test) testfile << "PS3  ####################### PuzzleSerializer serialize #######################\n";
-
     std::ofstream file;
     file.open(filePath.toLatin1());
     // Write default board
@@ -51,6 +51,7 @@ void PuzzleSerializer::serialize(Puzzle* puzzle, QString filePath)
         }
         file << "\n";
     }
+    puzzle->filePathRef = filePath;
     file.close();
 }
 
@@ -65,7 +66,6 @@ Puzzle* PuzzleSerializer::deserialize(QString filePath){
     Puzzle *puzzle = new Puzzle();
 
     std::ifstream file(filePath.toLatin1());
-
     char comma;
 
     // Read in defalut board
