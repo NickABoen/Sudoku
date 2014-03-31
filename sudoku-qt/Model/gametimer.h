@@ -20,6 +20,7 @@ namespace Model
         QElapsedTimer *GTimer;
         int runningTime;
         void setPuzzle(Puzzle *p);
+        void resetTimer();
         virtual void run();
     };
 }

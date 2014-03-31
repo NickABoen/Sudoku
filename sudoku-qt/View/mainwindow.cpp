@@ -177,7 +177,7 @@ void MainWindow::resetColor(int x, int y)
 {
     //fields[x][y]->setStyleSheet("QLineEdit{color: black; background: white;font: 28pt;}");
     fields[x][y]->setStyleSheet("");
-
+    fields[x][y]->setStyleSheet("QLineEdit{font: 28pt;}");
 }
 
 void MainWindow::createMenu()

@@ -49,12 +49,18 @@ MainController::MainController(): QObject(NULL),
     connect(&view, SIGNAL(onEnableNotesPressed()), this, SLOT(onEnableNotes()));
     connect(&view, SIGNAL(onCluePressed()), this, SLOT(onClues()));
     connect(ctimer, SIGNAL(timeout()), this,SLOT(giveClues()));
+    connect(&view, SIGNAL(view::close()), this, SLOT(endThread()));
+
 
     view.centralWidget()->setEnabled(false);
-    Clock = new GameTimer(&view);
-    Clock->setPuzzle(puzzle);
+    timerThread = new GameTimer(&view);
+    timerThread->setPuzzle(puzzle);
     //Show MainWindow
     view.show();
+}
+void MainController::endThread()
+{
+    timerThread->terminate();
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -111,7 +117,7 @@ void MainController::displayCurrentBoard(){
 void MainController::onLoadProgress() {
 
     if(test) testfile << "MC7  ####################### MainController onLoadProgress #######################\n";
-    Clock->paused = true;
+    timerThread->paused = true;
     QString filePath;
     QFileDialog* fileDialog = new QFileDialog(&view, "Load Progress", "", "*.*");
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first();
@@ -152,10 +158,10 @@ void MainController::onLoadProgress() {
         puzzle = currentProgressSerializer.deserialize(filePath, puzzleSerializer);
 
         //Display the default and current board
-        Clock->setPuzzle(puzzle);
-        Clock->GTimer->restart();
-        Clock->paused = false;
-        Clock->start();
+        timerThread->setPuzzle(puzzle);
+        timerThread->resetTimer();
+        timerThread->paused = false;
+        timerThread->start();
         enableUndoRedo = false;
         displayDefaultBoard();
         displayCurrentBoard();
@@ -187,7 +193,7 @@ void MainController::onSaveProgress(){
 
     if(test) testfile << "MC12 ####################### MainController onSaveProgress #######################\n";
 
-    Clock->paused = true;
+    timerThread->paused = true;
     QString filePath;
     QFileDialog* fileDialog = new QFileDialog();
     filePath = fileDialog->getSaveFileName(&view, "Save file", "", "*.*");
@@ -202,9 +208,9 @@ void MainController::onSaveProgress(){
         //Popup error message...
         //TODO
     }
-    Clock->GTimer->restart();
-    Clock->setPuzzle(puzzle);
-    Clock->paused = false;
+    timerThread->resetTimer();
+    timerThread->setPuzzle(puzzle);
+    timerThread->paused = false;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -213,7 +219,7 @@ void MainController::onSaveProgress(){
 void MainController::onLoadPuzzle(){
 
     if(test) testfile << "MC15 ####################### MainController onLoadPuzzle #######################\n";
-
+    timerThread->paused = true;
     QString filePath;
     QFileDialog* fileDialog = new QFileDialog(&view, "Load Puzzle", "", "*.*");
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first(); //If user specifies more than one file only take first??
@@ -252,10 +258,10 @@ void MainController::onLoadPuzzle(){
         }
         puzzle = puzzleSerializer.deserialize(filePath);
 
-        Clock->setPuzzle(puzzle);
-        Clock->GTimer->restart();
-        Clock->paused = false;
-        Clock->start();
+        timerThread->setPuzzle(puzzle);
+        timerThread->resetTimer();
+        timerThread->paused = false;
+        timerThread->start();
         enableUndoRedo = false;
         displayDefaultBoard();
         enableUndoRedo = true;
@@ -348,6 +354,7 @@ void MainController::onMakeMove(int* moveArray){
 void MainController::onGenerateBoard(){
     DifficultySelector *DS = new DifficultySelector();
     BoardGenerator *BG = new BoardGenerator();
+    timerThread->paused = true;
     if(puzzle != NULL){
         //User started game, do they want to save progress?
         QMessageBox msgBox;
@@ -362,9 +369,9 @@ void MainController::onGenerateBoard(){
             onSavePuzzle();
             clueTimer = false;
             qDebug() << "Setting Puzzle Time";
-            Clock->setPuzzle(puzzle);
-            Clock->paused = false;
-            Clock->start();
+            timerThread->setPuzzle(puzzle);
+            timerThread->paused = false;
+            timerThread->start();
         }
         else if(ret == msgBox.Discard){
             //Discard user progress
@@ -398,9 +405,10 @@ void MainController::onGenerateBoard(){
         storeFilePath();
         clueTimer = false;
         qDebug() << "Setting Puzzle Time";
-        Clock->setPuzzle(puzzle);
-        Clock->paused = false;
-        Clock->start();
+        timerThread->resetTimer();
+        timerThread->setPuzzle(puzzle);
+        timerThread->paused = false;
+        timerThread->start();
     }
 }
 
@@ -425,7 +433,8 @@ void MainController::onEnableNotes() {
     view.disableNotes->setEnabled(!enabled);
 }
 void MainController::onClues(){
-    clueTimer = true;
+    if(clueTimer) clueTimer = false;
+    else clueTimer = true;
 }
 
 void MainController::giveClues(){

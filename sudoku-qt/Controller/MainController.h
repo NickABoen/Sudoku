@@ -39,6 +39,7 @@ namespace Controller{
         void onEnableNotes();
         void onClues();
         void giveClues();
+        void endThread();
 
     signals:
         void setDefaultMove(int *moveArray);
@@ -53,7 +54,7 @@ namespace Controller{
         Model::PuzzleSerializer puzzleSerializer;
         View::MainWindow view;
         void storeFilePath();
-        Model::GameTimer *Clock;
+        Model::GameTimer *timerThread;
     };
 
 }

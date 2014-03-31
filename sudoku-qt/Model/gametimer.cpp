@@ -19,6 +19,11 @@ GameTimer::~GameTimer()
 {
     delete(GTimer);
 }
+void GameTimer::resetTimer()
+{
+    runningTime = 0;
+    GTimer->restart();
+}
 
 void GameTimer::setPuzzle(Puzzle *p)
 {
