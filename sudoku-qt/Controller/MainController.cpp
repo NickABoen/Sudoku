@@ -421,11 +421,12 @@ void MainController::onEnableNotes() {
     //need to set up a disable function as well. Will get there
     bool enabled = view.isNotesEnabled();
     view.setNotesEnabled(!enabled);
-    view.enableNotes->setEnabled(enabled);
-    view.disableNotes->setEnabled(!enabled);
+    view.enableNotes->setChecked(!enabled);
 }
 void MainController::onClues(){
-    clueTimer = true;
+    if (clueTimer) clueTimer = false;
+    else clueTimer = true;
+    view.clue->setChecked(clueTimer);
 }
 
 void MainController::giveClues(){

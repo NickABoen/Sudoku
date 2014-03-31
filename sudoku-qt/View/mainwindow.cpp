@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
+#include "focusLineEdit.h"
 
 #include <QDebug>
 #include <QKeyEvent>
@@ -22,8 +22,8 @@ MainWindow::MainWindow(QWidget *parent) :
         for (int j = 0; j < 9; j++) {
 
             //Creating and formatting each QLineEdit field.
-            fields[i][j] = new QLineEdit(ui->centralWidget);
-            QLineEdit *field = fields[i][j];
+            fields[i][j] = new FocusLineEdit(ui->centralWidget);
+            FocusLineEdit *field = fields[i][j];
             QValidator *val = new QIntValidator(1,9,field);
             field->setValidator(val);
             field->setObjectName(QString::number(i) + "_" + QString::number(j));
@@ -46,9 +46,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
             connect(field, SIGNAL(selectionChanged()), this, SLOT(fieldFocused()));
             connect(field, SIGNAL(textChanged(QString)),this,SLOT(fieldChanged(QString)));
-
+            connect(field, SIGNAL(focused(bool)),this,SLOT(focusChanged(bool)));
+            connect(field, SIGNAL(moveLeft()), this, SLOT(moveLeft()));
+            connect(field, SIGNAL(moveRight()), this, SLOT(moveRight()));
         }
     }
+    focusedField[0] = 0;
+    focusedField[1] = 0;
+    enableNotes = false;
 
     QFrame *line0 = new QFrame(ui->centralWidget);
     line0->setFrameShape(QFrame::HLine);
@@ -80,6 +85,8 @@ MainWindow::MainWindow(QWidget *parent) :
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this, SIGNAL(onCluePressed()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_T), this, SIGNAL(onHintPressed()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_G), this, SIGNAL(onGenerateBoardPressed()));
+    new QShortcut(QKeySequence(Qt::Key_Up), this, SLOT(moveUp()));
+    new QShortcut(QKeySequence(Qt::Key_Down), this, SLOT(moveDown()));
 
     createMenu();
 }
@@ -92,21 +99,80 @@ MainWindow::~MainWindow()
 
 void MainWindow::fieldChanged(QString text)
 {
-    QLineEdit *field = (QLineEdit *)sender();
+    FocusLineEdit *field = (FocusLineEdit *)sender();
     int *moveArray = createMoveArray(text, field->objectName());
     emit onMakeMove(moveArray);
 }
 
+void MainWindow::focusChanged(bool b)
+{
+    if (b) {
+        FocusLineEdit *field = (FocusLineEdit *)sender();
+        int *moveArray = createMoveArray("1", field->objectName());
+        focusedField[0] = moveArray[1];
+        focusedField[1] = moveArray[2];
+    }
+}
+
+void MainWindow::moveUp() {
+    bool enabled = false;
+    int y = focusedField[1];
+    while (!enabled && y > 0) {
+        y -= 1;
+        if (fields[focusedField[0]][y]->isEnabled()) {
+            enabled = true;
+            focusedField[1] = y;
+        }
+    }
+    fields[focusedField[0]][focusedField[1]]->setFocus();
+}
+void MainWindow::moveDown() {
+    bool enabled = false;
+    int y = focusedField[1];
+    while (!enabled && y < 8) {
+        y += 1;
+        if (fields[focusedField[0]][y]->isEnabled()) {
+            enabled = true;
+            focusedField[1] = y;
+        }
+    }
+    fields[focusedField[0]][focusedField[1]]->setFocus();
+}
+void MainWindow::moveRight() {
+    bool enabled = false;
+    int x = focusedField[0];
+    while (!enabled && x < 8) {
+        x += 1;
+        if (fields[x][focusedField[1]]->isEnabled()) {
+            enabled = true;
+            focusedField[0] = x;
+        }
+    }
+    fields[focusedField[0]][focusedField[1]]->setFocus();
+}
+void MainWindow::moveLeft() {
+    bool enabled = false;
+    int x = focusedField[0];;
+    while (!enabled && x > 0) {
+        x -= 1;
+        if (fields[x][focusedField[1]]->isEnabled()) {
+            enabled = true;
+            focusedField[0] = x;
+        }
+    }
+    fields[focusedField[0]][focusedField[1]]->setFocus();
+}
+
+//For notes (should be double clicked.
 void MainWindow::fieldFocused() {
     if (isNotesEnabled()) {
-        QLineEdit *field = (QLineEdit *)sender();
+        FocusLineEdit *field = (FocusLineEdit *)sender();
         int *moveArray = createMoveArray("1", field->objectName());
         QLabel *label = labels[moveArray[1]][moveArray[2]];
 
-        QString result = QInputDialog::getText(0, "Add Note", "Value:", QLineEdit::Normal, label->text());
+        QString result = QInputDialog::getText(0, "Add Note", "Value:", FocusLineEdit::Normal, label->text());
 
         label->setText(result);
-
     }
 }
 
@@ -198,7 +264,7 @@ void MainWindow::createMenu()
         QAction *saveProgressAction = fileMenu->addAction("Save Progress");
         connect(saveProgressAction, SIGNAL(triggered()), this, SIGNAL(onSaveProgressPressed()));
 
-        QAction *generateBoardAction = fileMenu->addAction("Generate Board");
+        QAction *generateBoardAction = fileMenu->addAction("Generate Board\tCtrl+G");
         connect(generateBoardAction, SIGNAL(triggered()), this, SIGNAL(onGenerateBoardPressed()));
 
         QAction *exitAction = fileMenu->addAction("Exit");
@@ -207,11 +273,11 @@ void MainWindow::createMenu()
 
     QMenu *editMenu = ui->menuBar->addMenu("Edit");
     {
-        undoAction = editMenu->addAction("Undo");
+        undoAction = editMenu->addAction("Undo\tCtrl+U");
         undoAction->setEnabled(false);
         connect(undoAction, SIGNAL(triggered()), this, SIGNAL(onUndoPressed()));
 
-        redoAction = editMenu->addAction("Redo");
+        redoAction = editMenu->addAction("Redo\tCtrl+R");
         redoAction->setEnabled(false);
         connect(redoAction, SIGNAL(triggered()), this, SIGNAL(onRedoPressed()));
 
@@ -222,20 +288,18 @@ void MainWindow::createMenu()
 
     QMenu *settingsMenu = ui->menuBar->addMenu("Options");
     {
-        QAction *settingsAction = settingsMenu->addAction("Hints");
+        QAction *settingsAction = settingsMenu->addAction("Hint\t\tCtrl+T");
         settingsAction->setEnabled(true);
         connect(settingsAction, SIGNAL(triggered()), this, SIGNAL(onHintPressed()));
         //TODO
-        enableNotes = settingsMenu->addAction("Enable Notes");
+        enableNotes = settingsMenu->addAction("Enable Notes\tCtrl+E");
         enableNotes->setEnabled(true);
+        enableNotes->setCheckable(true);
         connect(enableNotes, SIGNAL(triggered()), this, SIGNAL(onEnableNotesPressed()));
 
-        disableNotes = settingsMenu->addAction("Disable Notes");
-        disableNotes->setEnabled(false);
-        connect(disableNotes, SIGNAL(triggered()), this, SIGNAL(onEnableNotesPressed()));
-
-        clue = settingsMenu->addAction("Clues");
+        clue = settingsMenu->addAction("Enable Clues\tCtrl+L");
         clue->setEnabled(true);
+        clue->setCheckable(true);
         connect(clue, SIGNAL(triggered()), this, SIGNAL(onCluePressed()));
     }
 }
