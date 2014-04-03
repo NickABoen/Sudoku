@@ -119,7 +119,7 @@ void MainController::onLoadProgress() {
     if(test) testfile << "MC7  ####################### MainController onLoadProgress #######################\n";
     timerThread->paused = true;
     QString filePath;
-    QFileDialog* fileDialog = new QFileDialog(&view, "Load Progress", "", "*.*");
+    QFileDialog* fileDialog = new QFileDialog(&view, "Load Progress", "", "*.txt");
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first();
     if(filePath != "")
     {
@@ -196,7 +196,7 @@ void MainController::onSaveProgress(){
     timerThread->paused = true;
     QString filePath;
     QFileDialog* fileDialog = new QFileDialog();
-    filePath = fileDialog->getSaveFileName(&view, "Save file", "", "*.*");
+    filePath = fileDialog->getSaveFileName(&view, "Save file", "", "*.txt");
 
     if(filePath != "")
     {
@@ -221,7 +221,7 @@ void MainController::onLoadPuzzle(){
     if(test) testfile << "MC15 ####################### MainController onLoadPuzzle #######################\n";
     timerThread->paused = true;
     QString filePath;
-    QFileDialog* fileDialog = new QFileDialog(&view, "Load Puzzle", "", "*.*");
+    QFileDialog* fileDialog = new QFileDialog(&view, "Load Puzzle", "", "*.txt");
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first(); //If user specifies more than one file only take first??
     if(filePath != "")
     {
@@ -538,7 +538,7 @@ void MainController::onClear(){
 void MainController::storeFilePath() {
     QString filePath;
     QFileDialog* fileDialog = new QFileDialog();
-    filePath = fileDialog->getSaveFileName(&view, "Save file", "", "*.*");
+    filePath = fileDialog->getSaveFileName(&view, "Save file", "", "*.txt");
 
     if(filePath != "")
     {
