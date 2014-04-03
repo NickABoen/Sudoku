@@ -13,11 +13,19 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <float.h>
 
 using namespace Model;
 
 ImagePuzzleGenerator::ImagePuzzleGenerator()
 {
+}
+
+// comparison function object
+bool compareContourAreas ( std::vector<cv::Point> contour1, std::vector<cv::Point> contour2 ) {
+    double i = cv::contourArea(contour1);
+    double j = cv::contourArea(contour2);
+    return ( i < j );
 }
 
 Puzzle *ImagePuzzleGenerator::generate(QString filePath)
@@ -44,26 +52,15 @@ Puzzle *ImagePuzzleGenerator::generate(QString filePath)
         return NULL;
     }
 
-    cv::GaussianBlur(src, src, cv::Size(5, 5), 1, 0);
     cv::cvtColor(src, src, CV_BGR2GRAY);
-    cv::imwrite("greyWithGaussianBlur.png", src);
 
-    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(30, 30));
+    cv::Mat blur;
 
-    cv::Mat close, div;
-
-    cv::morphologyEx(src, close, cv::MORPH_CLOSE, kernel);
-
-    src.convertTo(src, CV_32F);
-    cv::divide(src, close, src, 1, CV_32F);
-    cv::normalize(src, src, 0, 255, cv::NORM_MINMAX);
-    src.convertTo(src, CV_8UC1);
-
-    cv::imwrite("divideByClose1.png", src);
+    cv::blur( src, blur, cv::Size(3,3) );
 
     cv::Mat canny;
 
-    cv::Canny(src, canny, 50, 200, 3);
+    cv::Canny(blur, canny, 120, 300, 3);
     cv::imwrite("Canny1.png", canny);
 
     cv::vector<cv::vector<cv::Point>> contours;
@@ -87,86 +84,108 @@ Puzzle *ImagePuzzleGenerator::generate(QString filePath)
         }
     }
 
-    cv::vector<cv::Point> approxContour;
-    cv::approxPolyDP(contours[index], approxContour, 3, true);
-
     cv::Point2f srcCorners[4];
     cv::Point2f corners[4];
+    int size;
 
-    int topLeftIndex = 0;
-    float distance = 1000000000000; //Horray for magic numbers!
-
-    for(int i = 0; i < approxContour.size(); i++)
+    if(maxArea > src.size().area() / 9)
     {
-        int deltaX = approxContour[i].x - 0;
-        int deltaY = approxContour[i].y - 0;
 
-        float tempDistance = std::sqrt((float)(deltaX * deltaX + deltaY * deltaY));
+        cv::vector<cv::Point> approxContour;
+        cv::approxPolyDP(contours[index], approxContour, 3, true);
 
-        if(tempDistance < distance)
+        int topLeftIndex = 0;
+        float distance = FLT_MAX;
+
+        for(size_t i = 0; i < approxContour.size(); i++)
         {
-            topLeftIndex = i;
-            distance = tempDistance;
+            int deltaX = approxContour[i].x - 0;
+            int deltaY = approxContour[i].y - 0;
+
+            float tempDistance = std::sqrt((float)(deltaX * deltaX + deltaY * deltaY));
+
+            if(tempDistance < distance)
+            {
+                topLeftIndex = i;
+                distance = tempDistance;
+            }
         }
+        corners[0] = approxContour[topLeftIndex];
+
+        int topRightIndex = 0;
+        distance = FLT_MAX;
+
+        for(size_t i = 0; i < approxContour.size(); i++)
+        {
+            int deltaX = approxContour[i].x - src.size().width;
+            int deltaY = approxContour[i].y - 0;
+
+            float tempDistance = std::sqrt((float)(deltaX * deltaX + deltaY * deltaY));
+
+            if(tempDistance < distance)
+            {
+                topRightIndex = i;
+                distance = tempDistance;
+            }
+        }
+        corners[1] = approxContour[topRightIndex];
+
+        int bottomLeftIndex = 0;
+        distance = FLT_MAX;
+
+        for(size_t i = 0; i < approxContour.size(); i++)
+        {
+            int deltaX = approxContour[i].x - 0;
+            int deltaY = approxContour[i].y - src.size().height;
+
+            float tempDistance = std::sqrt((float)(deltaX * deltaX + deltaY * deltaY));
+
+            if(tempDistance < distance)
+            {
+                bottomLeftIndex = i;
+                distance = tempDistance;
+            }
+        }
+        corners[2] = approxContour[bottomLeftIndex];
+
+        int bottomRightIndex = 0;
+        distance = FLT_MAX;
+
+        for(size_t i = 0; i < approxContour.size(); i++)
+        {
+            int deltaX = approxContour[i].x - src.size().width;
+            int deltaY = approxContour[i].y - src.size().height;
+
+            float tempDistance = std::sqrt((float)(deltaX * deltaX + deltaY * deltaY));
+
+            if(tempDistance < distance)
+            {
+                bottomRightIndex = i;
+                distance = tempDistance;
+            }
+        }
+        corners[3] = approxContour[bottomRightIndex];
+
+        int boardWidth = corners[1].x - corners[0].x;
+        if(corners[3].x - corners[2].x < boardWidth) boardWidth = corners[3].x - corners[2].x;
+
+        int boardHeight = corners[2].y - corners[0].y;
+        if(corners[3].y - corners[1].y < boardHeight) boardHeight = corners[3].y - corners[1].y;
+
+        size = boardWidth;
+        if(boardHeight < size) size = boardHeight;
+
     }
-    corners[0] = approxContour[topLeftIndex];
-
-    int topRightIndex = 0;
-    distance = 1000000000000; //Horray for magic numbers!
-
-    for(int i = 0; i < approxContour.size(); i++)
+    else
     {
-        int deltaX = approxContour[i].x - src.size().width;
-        int deltaY = approxContour[i].y - 0;
+        corners[0] = cv::Point(0,                0);
+        corners[1] = cv::Point(src.size().width, 0);
+        corners[2] = cv::Point(0,                src.size().height);
+        corners[3] = cv::Point(src.size().width, src.size().height);
 
-        float tempDistance = std::sqrt((float)(deltaX * deltaX + deltaY * deltaY));
-
-        if(tempDistance < distance)
-        {
-            topRightIndex = i;
-            distance = tempDistance;
-        }
+        size = src.size().width;
+        if(src.size().height < size) size = src.size().height;
     }
-    corners[1] = approxContour[topRightIndex];
-
-    int bottomLeftIndex = 0;
-    distance = 1000000000000; //Horray for magic numbers!
-
-    for(int i = 0; i < approxContour.size(); i++)
-    {
-        int deltaX = approxContour[i].x - 0;
-        int deltaY = approxContour[i].y - src.size().height;
-
-        float tempDistance = std::sqrt((float)(deltaX * deltaX + deltaY * deltaY));
-
-        if(tempDistance < distance)
-        {
-            bottomLeftIndex = i;
-            distance = tempDistance;
-        }
-    }
-    corners[2] = approxContour[bottomLeftIndex];
-
-    int bottomRightIndex = 0;
-    distance = 1000000000000; //Horray for magic numbers!
-
-    for(int i = 0; i < approxContour.size(); i++)
-    {
-        int deltaX = approxContour[i].x - src.size().width;
-        int deltaY = approxContour[i].y - src.size().height;
-
-        float tempDistance = std::sqrt((float)(deltaX * deltaX + deltaY * deltaY));
-
-        if(tempDistance < distance)
-        {
-            bottomRightIndex = i;
-            distance = tempDistance;
-        }
-    }
-    corners[3] = approxContour[bottomRightIndex];
-
-    int size = src.size().width;
-    if(src.size().height < size) size = src.size().height;
 
     srcCorners[0] = cv::Point(0,    0);
     srcCorners[1] = cv::Point(size, 0);
@@ -178,16 +197,92 @@ Puzzle *ImagePuzzleGenerator::generate(QString filePath)
     cv::Mat M( 2, 4, CV_32FC1 );
     M = cv::getPerspectiveTransform(corners, srcCorners);
     cv::warpPerspective(src, newSrc, M, newSrc.size());
+
     cv::imwrite("warped.png", newSrc);
 
-    cv::adaptiveThreshold(newSrc, newSrc, 255.0, CV_THRESH_BINARY, CV_ADAPTIVE_THRESH_MEAN_C, 11, 3.0f);
-    cv::imwrite("afterThreshold.png", newSrc);
 
-//    cv::Canny(newSrc, canny, 100, 100, 3);
-//    cv::imwrite("Canny2.png", canny);
+    cv::Scalar avgPixelIntensity = cv::mean( newSrc );
+
+    newSrc = newSrc > (avgPixelIntensity.val[0] - (255 - avgPixelIntensity.val[0])/3 );
+
+    cv::imwrite("binaryThreshold.png", newSrc);
+
+    //cv::adaptiveThreshold(newSrc, newSrc, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY, 11, 2);
+
+    //cv::imwrite("adaptiveThresh.png", newSrc);
+
+   // cv::floodFill(newSrc, newSrc, cv::Point(1, 1),cv::Scalar(0));
+
+
+//    cv::Mat kernel2 = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(1, 1));
+
+    //cv::erode(newSrc, blur, kernel2);
+
+   // cv::imwrite("erode.png", blur);
+   // cv::blur( blur, blur, cv::Size(3,3) );
+
+   // cv::Canny(blur, canny, 150, 250, 3);
+
+
+    cv::Mat kernel2 = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3));
+
+//   // cv::bitwise_not(canny, canny);
+
+    cv::erode(newSrc, newSrc, kernel2);
+
+//    cv::Mat kernel3 = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(2, 2));
+//   // cv::dilate(canny, canny, kernel3);
+
+//    cv::bitwise_not(canny, canny);
+//    cv::erode(canny, canny, kernel3);
+
+   // cv::imwrite("Canny2.png", canny);
+
+   // cv::Mat mask(cv::Point(size + 2, size + 2), CV_8UC1, cv::Scalar(0));
+    cv::Point p(0, 0);
+
+    cv::floodFill(newSrc, p, 255);
+   // cv::imwrite("mask.png", newSrc);
+
+//    cv::findContours(canny, contours, hierarchy, CV_RETR_LIST , CV_CHAIN_APPROX_SIMPLE );
+
+//    std::sort(contours.begin(), contours.end(), compareContourAreas);
+
+//    int count = 0;
+//    int i = 0;
+//    double lastArea = -1;
+
+//    while(count < 81 && i < contours.size() - 1)
+//    {
+//        i++;
+
+//        double area = cv::contourArea(contours[i]);
+
+//        if(area > (size/11 * size/11) && area < (size/9 * size/9))
+//        {
+//          //  if(lastArea == -1 || area - lastArea < lastArea/25)
+//            {
+//                lastArea = area;
+//                count ++;
+//                drawContours(mask, contours, i, cv::Scalar(255), CV_FILLED);
+//            }
+//        }
+//    }
+
+//    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5));
+
+//    cv::erode(mask, mask, kernel);
+
+//    cv::imwrite("mask.png", mask);
+
+//    cv::bitwise_not(newSrc, newSrc);
+
+//    cv::bitwise_and(newSrc, mask, newSrc);
+
+//    cv::bitwise_not(newSrc, newSrc);
 
 //    cv::vector<cv::Vec4i> lines;
-//    cv::HoughLinesP(canny, lines, 1, CV_PI/180, 30);
+//    cv::HoughLinesP(canny, lines, 1, CV_PI/180, 5, size/2, 5 );
 
 //    for( size_t i = 0; i < lines.size(); i++ )
 //    {
@@ -195,75 +290,77 @@ Puzzle *ImagePuzzleGenerator::generate(QString filePath)
 //        cv::line( newSrc, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(255,255,255), 3, CV_AA);
 //    }
 
-    int offset = (int)((float)size/9.0f);
+//    int offset = (int)((float)size/9.0f);
 
-    for(int i = 0; i < 11; i++)
-    {
-        cv::line( newSrc, cv::Point(i * offset + 5, 0), cv::Point(i * offset + 5, size), cv::Scalar(255,255,255), 10, CV_AA);
-        cv::line( newSrc, cv::Point(0, i * offset + 5), cv::Point(size, i * offset + 5), cv::Scalar(255,255,255), 10, CV_AA);
-    }
+//    for(int i = 0; i < 11; i++)
+//    {
+//        cv::line( newSrc, cv::Point(i * offset + 5, 0), cv::Point(i * offset + 5, size), cv::Scalar(255,255,255), 10, CV_AA);
+//        cv::line( newSrc, cv::Point(0, i * offset + 5), cv::Point(size, i * offset + 5), cv::Scalar(255,255,255), 10, CV_AA);
+//    }
 
-    cv::imwrite("Lines.png", newSrc);
+    cv::imwrite("LinesRemoved.png", newSrc);
 
-    //    api->SetImage
-    //    (
-    //        (uchar*)newSrc.data,
-    //        newSrc.size().width,
-    //        newSrc.size().height,
-    //        newSrc.channels(),
-    //        newSrc.step1()
-    //    );
+        api->SetImage
+        (
+            (uchar*)newSrc.data,
+            newSrc.size().width,
+            newSrc.size().height,
+            newSrc.channels(),
+            newSrc.step1()
+        );
 
-    //    char *boxtext = api->GetBoxText(0);
+        char *boxtext = api->GetBoxText(0);
 
-    //    // Destroy used object and release memory
-    //    api->End();
+        // Destroy used object and release memory
+        api->End();
 
-    //    int cellWidth = src.size().width/9;
-    //    int cellHeight = src.size().height/9;
+        int cellWidth = newSrc.size().width/9;
+        int cellHeight = newSrc.size().height/9;
 
-    //    std::istringstream boxTextStream(boxtext);
+        std::istringstream boxTextStream(boxtext);
 
-    //    puzzle = new Puzzle();
+        puzzle = new Puzzle();
 
-    //    //file << "Parsed box text...\n";
-    //    while (!boxTextStream.eof())
-    //    {
-    //       int left, right, top, bottom, value, trash;
+        //file << "Parsed box text...\n";
+        while (!boxTextStream.eof())
+        {
+           int left, right, top, bottom, value, trash;
 
-    //       boxTextStream >> value >> left >> bottom >> right >> top >> trash;
+           boxTextStream >> value >> left >> bottom >> right >> top >> trash;
 
-    //       //TODO for some reason it reads in the last line twice...
+           //TODO for some reason it reads in the last line twice...
 
-    //       float x1 = left / cellWidth;
-    //       float x2 = right / cellWidth;
-    //       float y1 = bottom / cellHeight;
-    //       float y2 = top / cellHeight;
+           float x1 = left / cellWidth;
+           float x2 = right / cellWidth;
+           float y1 = bottom / cellHeight;
+           float y2 = top / cellHeight;
 
-    //       if((1 - (x1 - (int)x1)) < (x2 - (int)x2)) x1 = x2;
-    //       if((1 - (y1 - (int)y1)) < (y2 - (int)y2)) y1 = y2;
-    //       puzzle->defaultBoard[(int)x1][8 - (int)y1] = value;
-    //    }
+           if((1 - (x1 - (int)x1)) < (x2 - (int)x2)) x1 = x2;
+           if((1 - (y1 - (int)y1)) < (y2 - (int)y2)) y1 = y2;
+           puzzle->defaultBoard[(int)x1][8 - (int)y1] = value;
+        }
 
-    //    //TODO fix this
-    //    int** ConvertedBoard = new int*[9];
-    //    for(int i = 0; i < 9; i++){
-    //        ConvertedBoard[i] = new int[9];
-    //    }
-    //    for(int i = 0; i<9;i++){
-    //        for(int j = 0; j<9; j++){
-    //            int row = 3*(i/3)+j/3;
-    //            int column = 3*(i%3)+j%3;
-    //            ConvertedBoard[i][j] = puzzle->defaultBoard[row][column];
-    //        }
-    //    }
+        //TODO fix this
+        int** ConvertedBoard = new int*[9];
+        for(int i = 0; i < 9; i++){
+            ConvertedBoard[i] = new int[9];
+        }
+        for(int i = 0; i<9;i++){
+            for(int j = 0; j<9; j++){
+                int row = 3*(i/3)+j/3;
+                int column = 3*(i%3)+j%3;
+                ConvertedBoard[i][j] = puzzle->defaultBoard[row][column];
+            }
+        }
 
-    //    BoardGenerator*  boardGenerator = new BoardGenerator();
+        BoardGenerator*  boardGenerator = new BoardGenerator();
 
-    //    BoardSolver boardSolver(ConvertedBoard);
-    //    puzzle->solvedBoard = boardGenerator->ConvertBoard(boardSolver.Solve());
+        BoardSolver boardSolver(ConvertedBoard);
+        puzzle->solvedBoard = boardGenerator->ConvertBoard(boardSolver.Solve());
 
     return puzzle;
 }
+
+
 
 
