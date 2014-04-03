@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QLineEdit>
+#include "focusLineEdit.h"
 #include <QPushButton>
 #include <QString>
 #include <QAction>
@@ -40,6 +40,7 @@ namespace View {
         QAction *enableNotes;
         QAction *disableNotes;
         QLabel *TIMER;
+        int focusedField[2];
 
     signals:
         void onLoadProgressPressed();
@@ -58,6 +59,11 @@ namespace View {
     private slots:
         void fieldChanged(QString text);
         void fieldFocused();
+        void focusChanged(bool b);
+        void moveUp();
+        void moveDown();
+        void moveRight();
+        void moveLeft();
 
     private:
         int * createMoveArray(QString text, QString fieldname);
@@ -65,7 +71,7 @@ namespace View {
 
         bool notesEnabled;
         Ui::MainWindow *ui;
-        QLineEdit *fields[9][9];
+        FocusLineEdit *fields[9][9];
         QLabel *labels[9][9];
     };
 }

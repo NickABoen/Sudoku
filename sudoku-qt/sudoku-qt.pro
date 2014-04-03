@@ -13,7 +13,7 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
            test.h \
-           test.cpp
+           test.cpp \
 
 include(Model/Model.pri)
 include(View/View.pri)
@@ -28,3 +28,5 @@ DEPENDPATH += $$PWD/Model\
               $$PWD/Controller
 
 FORMS +=
+
+HEADERS +=
