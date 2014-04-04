@@ -41,6 +41,7 @@ namespace View {
         QAction *disableNotes;
         QLabel *TIMER;
         int focusedField[2];
+        bool notesEnabled;
 
     signals:
         void onLoadProgressPressed();
@@ -69,7 +70,6 @@ namespace View {
         int * createMoveArray(QString text, QString fieldname);
         void createMenu();
 
-        bool notesEnabled;
         Ui::MainWindow *ui;
         FocusLineEdit *fields[9][9];
         QLabel *labels[9][9];
