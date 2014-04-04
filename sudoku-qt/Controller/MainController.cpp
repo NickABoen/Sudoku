@@ -458,33 +458,9 @@ void MainController::onGenerateBoard(){
     }
 }
 
+//////////////////////////////////////////////////////////////////////////////////
 void MainController::onGenerateBoardFromImage()
 {
-//    QString filePath;
-//    QFileDialog* fileDialog = new QFileDialog(&view, "Board Image", "", "*.*");
-
-//    if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first();
-//    if(filePath == "") return;
-
-//    if(!checkIfUnsavedProgressAndReset()) return;
-
-//    ImagePuzzleGenerator gen;
-
-//    puzzle = gen.generate(filePath);
-
-//    if(puzzle == NULL)
-//    {
-//        QMessageBox msgBox;
-//        msgBox.setText("ERROR: Unable to generate puzzle from image.");
-//        msgBox.setInformativeText("Please try again with another image.");
-//        msgBox.addButton(trUtf8("Ok"), QMessageBox::YesRole);
-//        msgBox.exec();
-
-//        return;
-//    }
-
-//    displayDefaultBoard();
-
     timerThread->paused = true;
     if(puzzle != NULL){
         //User started game, do they want to save progress?
@@ -548,6 +524,7 @@ void MainController::onGenerateBoardFromImage()
 
 }
 
+//////////////////////////////////////////////////////////////////////////////////
 void MainController::onHint(){
     //this needs to be optimized.
     int x = rand() % 9;
@@ -557,10 +534,14 @@ void MainController::onHint(){
         y = rand() % 9;
     }
     int moveArray[3] = {puzzle->solvedBoard[x][y], x, y};
+
+    enableUndoRedo = false;
     view.setMove(moveArray, false);
+    enableUndoRedo = true;
 
 }
 
+//////////////////////////////////////////////////////////////////////////////////
 void MainController::onEnableNotes() {
     //need to set up a disable function as well. Will get there
     bool enabled = view.isNotesEnabled();
@@ -568,12 +549,14 @@ void MainController::onEnableNotes() {
     view.enableNotes->setChecked(!enabled);
 }
 
+//////////////////////////////////////////////////////////////////////////////////
 void MainController::onClues(){
     if (clueTimer) clueTimer = false;
     else clueTimer = true;
     view.clue->setChecked(clueTimer);
 }
 
+//////////////////////////////////////////////////////////////////////////////////
 void MainController::giveClues(){
 
     int x = rand() % 9;
@@ -600,12 +583,14 @@ void MainController::onUndoMove(){
 
     if(test) testfile << "MC31 ####################### MainController onUndoMove #######################\n";
 
-    Model::Move checkMove = puzzle->undo.top();
-    if (!view.isFieldEnabled(checkMove.x, checkMove.y)) {
-        //If the top value is locked (hints, etc), then remove it and don't use it.
-        puzzle->undo.pop();
-        if (puzzle->undo.isEmpty()) return;
-    }
+    if (puzzle->undo.isEmpty()) return;
+
+//    Model::Move checkMove = puzzle->undo.top();
+//    if (!view.isFieldEnabled(checkMove.x, checkMove.y)) {
+//        //If the top value is locked (hints, etc), then remove it and don't use it.
+//        puzzle->undo.pop();
+
+//    }
 
     Model::Move undoMove = puzzle->undo.pop();
 
@@ -632,6 +617,8 @@ void MainController::onUndoMove(){
 void MainController::onRedoMove(){
 
     if(test) testfile << "MC33 ####################### MainController onRedoMove #######################\n";
+
+    if(puzzle->redo.isEmpty()) return;
 
     Model::Move redoMove = puzzle->redo.pop();
 
@@ -697,6 +684,7 @@ bool MainController::checkIfUnsavedProgressAndReset()
     return true;
 }
 
+//////////////////////////////////////////////////////////////////////////////////
 void MainController::storeFilePath() {
     QString filePath;
     QFileDialog* fileDialog = new QFileDialog();
