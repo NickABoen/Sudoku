@@ -354,6 +354,10 @@ void MainController::onMakeMove(int* moveArray){
     // Make move and check if completed
     puzzle->currentBoard[x][y] = value;
     if(puzzle->checkCompleted()){
+
+        timerThread->paused = true;
+        timerThread->resetTimer();
+
         if(test) testfile << "MC29 Puzzle is completed\n";
         QMessageBox msgBox;
         msgBox.setText("You have sucessfully completed the puzzle!");
@@ -361,6 +365,7 @@ void MainController::onMakeMove(int* moveArray){
         QAbstractButton *puzzleBtn = msgBox.addButton(trUtf8("Load Puzzle"), QMessageBox::YesRole);
         QAbstractButton *progressBtn = msgBox.addButton(trUtf8("Load Progress"), QMessageBox::NoRole);
         QAbstractButton *generateBtn = msgBox.addButton(trUtf8("Generate Puzzle"), QMessageBox::NoRole);
+        QAbstractButton *generateImgBtn =  msgBox.addButton(trUtf8("Generate Puzzle from Image"), QMessageBox::NoRole);
         msgBox.exec();
 
         if(msgBox.clickedButton() == puzzleBtn){
@@ -372,8 +377,13 @@ void MainController::onMakeMove(int* moveArray){
             onLoadProgress();
         }
         else if (msgBox.clickedButton() == generateBtn){
-            if(test) testfile << "MC40 MessageBox Load Progress button clicked\n";
+            if(test) testfile << "MC40 MessageBox Generate Puzzle button clicked\n";
             onGenerateBoard();
+        }
+
+        else if (msgBox.clickedButton() == generateImgBtn){
+            if(test) testfile << "MC40 MessageBox Generate Puzzle from Image button clicked\n";
+            onGenerateBoardFromImage();
         }
     }
     else if(clueTimer==true){
@@ -450,30 +460,92 @@ void MainController::onGenerateBoard(){
 
 void MainController::onGenerateBoardFromImage()
 {
+//    QString filePath;
+//    QFileDialog* fileDialog = new QFileDialog(&view, "Board Image", "", "*.*");
+
+//    if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first();
+//    if(filePath == "") return;
+
+//    if(!checkIfUnsavedProgressAndReset()) return;
+
+//    ImagePuzzleGenerator gen;
+
+//    puzzle = gen.generate(filePath);
+
+//    if(puzzle == NULL)
+//    {
+//        QMessageBox msgBox;
+//        msgBox.setText("ERROR: Unable to generate puzzle from image.");
+//        msgBox.setInformativeText("Please try again with another image.");
+//        msgBox.addButton(trUtf8("Ok"), QMessageBox::YesRole);
+//        msgBox.exec();
+
+//        return;
+//    }
+
+//    displayDefaultBoard();
+
+    timerThread->paused = true;
+    if(puzzle != NULL){
+        //User started game, do they want to save progress?
+        QMessageBox msgBox;
+        msgBox.setText("You have unsaved progress.");
+        msgBox.setInformativeText("Do you want to save your progress?");
+        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Save);
+        int ret = msgBox.exec();
+
+        if(ret == msgBox.Save){
+            //Save user progress
+            onSavePuzzle();
+            clueTimer = false;
+            qDebug() << "Setting Puzzle Time";
+            timerThread->setPuzzle(puzzle);
+            timerThread->paused = false;
+            timerThread->start();
+        }
+        else if(ret == msgBox.Discard){
+            //Discard user progress
+            //Do nothing
+        }
+        else if(ret == msgBox.Cancel){
+            //Don't save or discard progress
+            return;
+        }
+
+        //User done saving/discarding game, clear board and delete puzzle
+        view.clearBoard();
+        delete puzzle;
+    }
+    view.notesEnabled = false;
+    view.enableNotes->setChecked(false);
+    view.clearLabels();
+
     QString filePath;
     QFileDialog* fileDialog = new QFileDialog(&view, "Board Image", "", "*.*");
 
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first();
     if(filePath == "") return;
 
-    if(!checkIfUnsavedProgressAndReset()) return;
-
     ImagePuzzleGenerator gen;
-
     puzzle = gen.generate(filePath);
 
-    if(puzzle == NULL)
-    {
-        QMessageBox msgBox;
-        msgBox.setText("ERROR: Unable to generate puzzle from image.");
-        msgBox.setInformativeText("Please try again with another image.");
-        msgBox.addButton(trUtf8("Ok"), QMessageBox::YesRole);
-        msgBox.exec();
-
-        return;
-    }
-
+    enableUndoRedo = false;
     displayDefaultBoard();
+    enableUndoRedo = true;
+
+    view.centralWidget()->setEnabled(true);
+    view.undoAction->setEnabled(false);
+    view.redoAction->setEnabled(false);
+    view.clearAction->setEnabled(false);
+    storeFilePath();
+    clueTimer = false;
+    qDebug() << "Setting Puzzle Time";
+    timerThread->resetTimer();
+    timerThread->setPuzzle(puzzle);
+    timerThread->paused = false;
+    timerThread->start();
+
 }
 
 void MainController::onHint(){
@@ -495,6 +567,7 @@ void MainController::onEnableNotes() {
     view.setNotesEnabled(!enabled);
     view.enableNotes->setChecked(!enabled);
 }
+
 void MainController::onClues(){
     if (clueTimer) clueTimer = false;
     else clueTimer = true;

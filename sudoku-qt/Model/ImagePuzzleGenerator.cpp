@@ -187,14 +187,14 @@ Puzzle *ImagePuzzleGenerator::generate(QString filePath)
     srcCorners[2] = cv::Point(0,    size);
     srcCorners[3] = cv::Point(size, size);
 
-    cv::Mat cornerCircles(src);
+//    cv::Mat cornerCircles(src);
 
-    cv::circle(cornerCircles, srcCorners[0], 5, 255/2, 5);
-    cv::circle(cornerCircles, srcCorners[1], 5, 255/2, 5);
-    cv::circle(cornerCircles, srcCorners[2], 5, 255/2, 5);
-    cv::circle(cornerCircles, srcCorners[3], 5, 255/2, 5);
+//    cv::circle(cornerCircles, srcCorners[0], 5, 255/2, 5);
+//    cv::circle(cornerCircles, srcCorners[1], 5, 255/2, 5);
+//    cv::circle(cornerCircles, srcCorners[2], 5, 255/2, 5);
+//    cv::circle(cornerCircles, srcCorners[3], 5, 255/2, 5);
 
-    cv::imshow("2: Find corners", cornerCircles);
+//   // cv::imshow("2: Find corners", cornerCircles);
 
     cv::Mat newSrc(size, size, CV_8UC3);
 
@@ -212,7 +212,7 @@ Puzzle *ImagePuzzleGenerator::generate(QString filePath)
     cv::Mat kernel2 = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3));
     cv::erode(newSrc, newSrc, kernel2);
 
-    cv::floodFill(newSrc, cv::Point(0, 0), 255);
+    cv::floodFill(newSrc, cv::Point(2, 2), 255);
     cv::imwrite("LinesRemoved.png", newSrc);
 
     api->SetImage
