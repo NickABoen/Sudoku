@@ -49,6 +49,7 @@ MainWindow::MainWindow(QWidget *parent) :
             connect(field, SIGNAL(focused(bool)),this,SLOT(focusChanged(bool)));
             connect(field, SIGNAL(moveLeft()), this, SLOT(moveLeft()));
             connect(field, SIGNAL(moveRight()), this, SLOT(moveRight()));
+            connect(field, SIGNAL(shortcutAddNote()), this, SLOT(shortcutAddNote()));
         }
     }
     focusedField[0] = 0;
@@ -169,6 +170,16 @@ void MainWindow::fieldFocused() {
         FocusLineEdit *field = (FocusLineEdit *)sender();
         int *moveArray = createMoveArray("1", field->objectName());
         QLabel *label = labels[moveArray[1]][moveArray[2]];
+
+        QString result = QInputDialog::getText(0, "Add Note", "Value:", FocusLineEdit::Normal, label->text());
+
+        label->setText(result);
+    }
+}
+
+void MainWindow::shortcutAddNote() {
+    if (isNotesEnabled()) {
+        QLabel *label = labels[focusedField[0]][focusedField[1]];
 
         QString result = QInputDialog::getText(0, "Add Note", "Value:", FocusLineEdit::Normal, label->text());
 

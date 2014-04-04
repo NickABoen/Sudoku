@@ -440,6 +440,7 @@ void MainController::onEnableNotes() {
     view.setNotesEnabled(!enabled);
     view.enableNotes->setChecked(!enabled);
 }
+
 void MainController::onClues(){
     if (clueTimer) clueTimer = false;
     else clueTimer = true;

@@ -62,6 +62,7 @@ namespace View {
         void fieldChanged(QString text);
         void fieldFocused();
         void focusChanged(bool b);
+        void shortcutAddNote();
         void moveUp();
         void moveDown();
         void moveRight();

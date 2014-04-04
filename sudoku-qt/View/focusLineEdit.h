@@ -18,6 +18,7 @@ signals:
   void focused(bool hasFocus);
   void moveRight();
   void moveLeft();
+  void shortcutAddNote();
 
 protected:
   virtual void focusInEvent(QFocusEvent *e);
