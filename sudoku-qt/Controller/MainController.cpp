@@ -1,16 +1,20 @@
 #include "MainController.h"
 #include "difficultyselector.h"
 #include "BoardGenerator.h"
+#include "BoardSolver.h"
 #include "Move.h"
 #include "Puzzle.h"
+#include "ImagePuzzleGenerator.h"
 #include "../test.h"
 
+#include <string>
 #include <QDebug>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QAbstractButton>
 #include <QAction>
 #include <QPushButton>
+#include <QLibrary>
 #include <QTimer>
 #include <QEventLoop>
 #include <QThread>
@@ -45,6 +49,7 @@ MainController::MainController(): QObject(NULL),
     connect(&view, SIGNAL(onLoadProgressPressed()), this, SLOT(onLoadProgress()));
     connect(&view, SIGNAL(onMakeMove(int*)), this, SLOT(onMakeMove(int*)));
     connect(&view, SIGNAL(onGenerateBoardPressed()), this, SLOT(onGenerateBoard()));
+    connect(&view, SIGNAL(onGenerateBoardFromImagePressed()), this, SLOT(onGenerateBoardFromImage()));
     connect(&view, SIGNAL(onHintPressed()), this, SLOT(onHint()));
     connect(&view, SIGNAL(onEnableNotesPressed()), this, SLOT(onEnableNotes()));
     connect(&view, SIGNAL(onCluePressed()), this, SLOT(onClues()));
@@ -80,6 +85,8 @@ void MainController::displayDefaultBoard(){
 
     if(test) testfile << "MC3  ####################### MainController displayDefalutBoard #######################\n";
 
+    enableUndoRedo = false;
+
     //For all values in default board display on gui if non-zero
     for(int i = 0; i < 9; i++){
         for(int j = 0; j < 9; j++){
@@ -90,6 +97,12 @@ void MainController::displayDefaultBoard(){
             }
         }
     }
+    enableUndoRedo = true;
+
+    view.centralWidget()->setEnabled(true);
+    view.undoAction->setEnabled(false);
+    view.redoAction->setEnabled(false);
+    view.clearAction->setEnabled(false);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -98,6 +111,8 @@ void MainController::displayDefaultBoard(){
 void MainController::displayCurrentBoard(){
 
     if(test) testfile << "MC5  ####################### MainController displayCurrentBoard #######################\n";
+
+    enableUndoRedo = false;
 
     //For all values in current board display on gui if not a default value
     for(int i = 0; i < 9; i++){
@@ -108,6 +123,18 @@ void MainController::displayCurrentBoard(){
                 view.setMove(moveArray, true);
             }
         }
+    }
+
+    enableUndoRedo = true;
+
+    if(puzzle->undo.count() > 0){
+        if(test) testfile << "MC9  Puzzle undo count > 0\n";
+        view.clearAction->setEnabled(true);
+        view.undoAction->setEnabled(true);
+    }
+    if(puzzle->redo.count() > 0){
+        if(test) testfile << "MC10 Puzzle redo count > 0\n";
+        view.redoAction->setEnabled(true);
     }
 }
 
@@ -181,7 +208,7 @@ void MainController::onLoadProgress() {
         }
 
         view.centralWidget()->setEnabled(true);
-    } 
+    }
     else{
         if(test) testfile << "MC11 Filepath was empty\n";
         //Popup error message...
@@ -421,6 +448,34 @@ void MainController::onGenerateBoard(){
     }
 }
 
+void MainController::onGenerateBoardFromImage()
+{
+    QString filePath;
+    QFileDialog* fileDialog = new QFileDialog(&view, "Board Image", "", "*.*");
+
+    if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first();
+    if(filePath == "") return;
+
+    if(!checkIfUnsavedProgressAndReset()) return;
+
+    ImagePuzzleGenerator gen;
+
+    puzzle = gen.generate(filePath);
+
+    if(puzzle == NULL)
+    {
+        QMessageBox msgBox;
+        msgBox.setText("ERROR: Unable to generate puzzle from image.");
+        msgBox.setInformativeText("Please try again with another image.");
+        msgBox.addButton(trUtf8("Ok"), QMessageBox::YesRole);
+        msgBox.exec();
+
+        return;
+    }
+
+    displayDefaultBoard();
+}
+
 void MainController::onHint(){
     //this needs to be optimized.
     int x = rand() % 9;
@@ -525,7 +580,7 @@ void MainController::onRedoMove(){
 }
 
 //////////////////////////////////////////////////////////////////////////////////
-// This function is called when the current board, and undo and redo stacks needs
+// This function is called when the current board and undo and redo stacks needs
 // to be cleared.
 //////////////////////////////////////////////////////////////////////////////////
 void MainController::onClear(){
@@ -535,13 +590,38 @@ void MainController::onClear(){
     // Clear everything
     view.clearBoard();
     displayDefaultBoard();
+}
 
-    puzzle->undo.clear();
-    puzzle->redo.clear();
+bool MainController::checkIfUnsavedProgressAndReset()
+{
+    if(puzzle != NULL){
+        //User started game, do they want to save progress?
+        QMessageBox msgBox;
+        msgBox.setText("You have unsaved progress.");
+        msgBox.setInformativeText("Do you want to save your progress?");
+        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Save);
+        int ret = msgBox.exec();
 
-    view.undoAction->setEnabled(false);
-    view.redoAction->setEnabled(false);
-    view.clearAction->setEnabled(false);
+        if(ret == msgBox.Save){
+            //Save user progress
+            onSavePuzzle();
+        }
+        else if(ret == msgBox.Discard){
+            //Discard user progress
+            //Do nothing
+        }
+        else if(ret == msgBox.Cancel){
+            //Don't save or discard progress
+            return false;
+        }
+
+        //User done saving/discarding game, clear board and delete puzzle
+        view.clearBoard();
+        delete puzzle;
+
+    }
+    return true;
 }
 
 void MainController::storeFilePath() {

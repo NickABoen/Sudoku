@@ -54,6 +54,7 @@ namespace View {
         void onRedoPressed();
         void onGenerateBoardPressed();
         void onClearPressed();
+        void onGenerateBoardFromImagePressed();
         void onHintPressed();
         void onEnableNotesPressed();
         void onCluePressed();

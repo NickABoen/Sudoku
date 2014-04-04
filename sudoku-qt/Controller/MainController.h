@@ -34,6 +34,7 @@ namespace Controller{
         void onUndoMove();
         void onRedoMove();
         void onGenerateBoard();
+        void onGenerateBoardFromImage();
         void onClear();
         void onHint();
         void onEnableNotes();
@@ -47,8 +48,10 @@ namespace Controller{
     private:
         void displayDefaultBoard();
         void displayCurrentBoard();
+        bool checkIfUnsavedProgressAndReset();
         bool clueTimer;
         QTimer *ctimer;
+
         Model::Puzzle* puzzle;
         Model::CurrentProgressSerializer currentProgressSerializer;
         Model::PuzzleSerializer puzzleSerializer;
