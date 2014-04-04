@@ -27,6 +27,7 @@ namespace View {
         void clearMove(int, int);
         void setMove(int *moveArray, bool isCurrent);
         void clearBoard();
+        void clearLabels();
         bool isFieldEnabled(int i, int j);
         bool isNotesEnabled();
         void setNotesEnabled(bool enabled);

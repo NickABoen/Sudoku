@@ -157,6 +157,7 @@ void MainController::onLoadProgress() {
 
         view.notesEnabled = false;
         view.enableNotes->setChecked(false);
+        view.clearLabels();
         puzzle = currentProgressSerializer.deserialize(filePath, puzzleSerializer);
 
         //Display the default and current board
@@ -260,6 +261,7 @@ void MainController::onLoadPuzzle(){
         }
         view.notesEnabled = false;
         view.enableNotes->setChecked(false);
+        view.clearLabels();
         puzzle = puzzleSerializer.deserialize(filePath);
 
         timerThread->setPuzzle(puzzle);
@@ -392,6 +394,7 @@ void MainController::onGenerateBoard(){
     }
     view.notesEnabled = false;
     view.enableNotes->setChecked(false);
+    view.clearLabels();
     puzzle = new Puzzle();
     DS->setFixedSize(192,145);
     DS->exec();

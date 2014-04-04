@@ -209,6 +209,14 @@ void MainWindow::clearBoard(){
     }
 }
 
+void MainWindow::clearLabels() {
+    for(int i = 0; i < 9; i++){
+        for(int j = 0; j < 9; j++){
+            labels[i][j]->setText("");
+        }
+    }
+}
+
 int * MainWindow::createMoveArray(QString text, QString fieldname) {
     static int loc[3];
     QStringList pieces = fieldname.split("_");
