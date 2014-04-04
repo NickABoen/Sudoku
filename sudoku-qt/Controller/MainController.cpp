@@ -585,13 +585,6 @@ void MainController::onUndoMove(){
 
     if (puzzle->undo.isEmpty()) return;
 
-//    Model::Move checkMove = puzzle->undo.top();
-//    if (!view.isFieldEnabled(checkMove.x, checkMove.y)) {
-//        //If the top value is locked (hints, etc), then remove it and don't use it.
-//        puzzle->undo.pop();
-
-//    }
-
     Model::Move undoMove = puzzle->undo.pop();
 
     int x = undoMove.x;

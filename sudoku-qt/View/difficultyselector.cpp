@@ -10,6 +10,8 @@ DifficultySelector::DifficultySelector(QWidget *parent) :
     connect(ui->EasyButton,SIGNAL(clicked()),this, SLOT(EasyClicked()));
     connect(ui->MediumButton,SIGNAL(clicked()),this, SLOT(MediumClicked()));
     connect(ui->HardButton,SIGNAL(clicked()),this, SLOT(HardClicked()));
+
+    this->setWindowFlags(Qt::WindowTitleHint);
 }
 
 DifficultySelector::~DifficultySelector()
