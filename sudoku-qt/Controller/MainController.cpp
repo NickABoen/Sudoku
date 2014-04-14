@@ -22,6 +22,7 @@ using namespace Controller;
 
 bool clearRedoStack = true;
 bool enableUndoRedo = true;
+int numHints;
 
 //////////////////////////////////////////////////////////////////////////////////
 // Constructor for MainController
@@ -47,10 +48,12 @@ MainController::MainController(): QObject(NULL),
     connect(&view, SIGNAL(onGenerateBoardPressed()), this, SLOT(onGenerateBoard()));
     connect(&view, SIGNAL(onHintPressed()), this, SLOT(onHint()));
     connect(&view, SIGNAL(onEnableNotesPressed()), this, SLOT(onEnableNotes()));
+    connect(&view, SIGNAL(onEnableValidationPressed()), this, SLOT(onEnableValidation()));
     connect(&view, SIGNAL(onCluePressed()), this, SLOT(onClues()));
     connect(ctimer, SIGNAL(timeout()), this,SLOT(giveClues()));
-    connect(&view, SIGNAL(view::close()), this, SLOT(endThread()));
+    connect(&view, SIGNAL(view::closeEvent()), this, SLOT(endThread()));
 
+    numHints = 1;
 
     view.centralWidget()->setEnabled(false);
     timerThread = new GameTimer(&view);
@@ -61,6 +64,7 @@ MainController::MainController(): QObject(NULL),
 void MainController::endThread()
 {
     timerThread->terminate();
+    view.close();
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -164,7 +168,7 @@ void MainController::onLoadProgress() {
         timerThread->setPuzzle(puzzle);
         timerThread->resetTimer();
         timerThread->paused = false;
-        timerThread->start();
+
         enableUndoRedo = false;
         displayDefaultBoard();
         displayCurrentBoard();
@@ -323,9 +327,23 @@ void MainController::onMakeMove(int* moveArray){
             clearRedoStack = true;
         }
     }
-
-    // Make move and check if completed
+    //make move
     puzzle->currentBoard[x][y] = value;
+
+    //Board Validation here
+    bool valid = true;
+    if(view.isValidationEnabled()) {
+        if (value != 0) {
+            valid = validateBoard(value,x,y);
+            qDebug() << "Validation: " + QString::number(valid);
+        }
+    }
+    if (!valid) {
+        view.changeColor(x,y);
+    } else {
+        view.resetColor(x,y);
+    }
+    // check if completed
     if(puzzle->checkCompleted()){
         if(test) testfile << "MC29 Puzzle is completed\n";
         QMessageBox msgBox;
@@ -423,6 +441,8 @@ void MainController::onGenerateBoard(){
 
 void MainController::onHint(){
     //this needs to be optimized.
+    timerThread->runningTime += numHints *5000;
+    numHints++;
     int x = rand() % 9;
     int y = rand() % 9;
     while(puzzle->currentBoard[x][y] != 0){
@@ -439,6 +459,13 @@ void MainController::onEnableNotes() {
     bool enabled = view.isNotesEnabled();
     view.setNotesEnabled(!enabled);
     view.enableNotes->setChecked(!enabled);
+}
+
+void MainController::onEnableValidation() {
+    qDebug() << "IN YO SHIZZ.";
+    bool enabled = view.isValidationEnabled();
+    view.setValidationEnabled(!enabled);
+    view.enableValidation->setChecked(!enabled);
 }
 
 void MainController::onClues(){
@@ -543,6 +570,34 @@ void MainController::onClear(){
     view.undoAction->setEnabled(false);
     view.redoAction->setEnabled(false);
     view.clearAction->setEnabled(false);
+}
+
+bool MainController::validateBoard(int value, int x, int y) {
+    //rows and cols
+    for (int i = 0; i < 9; i++) {
+        if (i != x && puzzle->currentBoard[i][y] == value) {
+            return false;
+        }
+        if (i != y && puzzle->currentBoard[x][i] == value) {
+            return false;
+        }
+    }
+    //section
+    int sectionX = x/3;
+    int sectionY = y/3;
+    int secX = sectionX*3;
+    int secY = sectionY*3;
+
+    for(int i=secX; i <= secX + 2; i++) {
+        for(int j = secY; j <= secY + 2; j++) {
+            if (i != x && j != y) {
+                if (puzzle->currentBoard[i][j] == value) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
 }
 
 void MainController::storeFilePath() {

@@ -37,6 +37,7 @@ namespace Controller{
         void onClear();
         void onHint();
         void onEnableNotes();
+        void onEnableValidation();
         void onClues();
         void giveClues();
         void endThread();
@@ -48,12 +49,14 @@ namespace Controller{
         void displayDefaultBoard();
         void displayCurrentBoard();
         bool clueTimer;
+        bool validationEnabled;
         QTimer *ctimer;
         Model::Puzzle* puzzle;
         Model::CurrentProgressSerializer currentProgressSerializer;
         Model::PuzzleSerializer puzzleSerializer;
         View::MainWindow view;
         void storeFilePath();
+        bool validateBoard(int value, int x, int y);
         Model::GameTimer *timerThread;
     };
 

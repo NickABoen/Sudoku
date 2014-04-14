@@ -31,6 +31,8 @@ namespace View {
         bool isFieldEnabled(int i, int j);
         bool isNotesEnabled();
         void setNotesEnabled(bool enabled);
+        bool isValidationEnabled();
+        void setValidationEnabled(bool enabled);
         void changeColor(int x, int y);
         void resetColor(int x, int y);
 
@@ -39,10 +41,12 @@ namespace View {
         QAction *clearAction;
         QAction *clue;
         QAction *enableNotes;
+        QAction *enableValidation;
         QAction *disableNotes;
         QLabel *TIMER;
         int focusedField[2];
         bool notesEnabled;
+        bool validationEnabled;
 
     signals:
         void onLoadProgressPressed();
@@ -56,6 +60,7 @@ namespace View {
         void onClearPressed();
         void onHintPressed();
         void onEnableNotesPressed();
+        void onEnableValidationPressed();
         void onCluePressed();
 
     private slots:

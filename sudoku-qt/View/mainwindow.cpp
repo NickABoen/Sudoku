@@ -54,7 +54,9 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     focusedField[0] = 0;
     focusedField[1] = 0;
-    enableNotes = false;
+    notesEnabled = false;
+    validationEnabled = false;
+
 
     QFrame *line0 = new QFrame(ui->centralWidget);
     line0->setFrameShape(QFrame::HLine);
@@ -250,10 +252,17 @@ bool MainWindow::isFieldEnabled(int i, int j) {
 bool MainWindow::isNotesEnabled() {
     return notesEnabled;
 }
+bool MainWindow::isValidationEnabled() {
+    return validationEnabled;
+}
 
 void MainWindow::setNotesEnabled(bool enabled) {
     notesEnabled = enabled;
 }
+void MainWindow::setValidationEnabled(bool enabled) {
+    validationEnabled = enabled;
+}
+
 void MainWindow::changeColor(int x, int y)
 {
     fields[x][y]->setStyleSheet("QLineEdit{color: white; background: red;font: 28pt;}");
@@ -320,6 +329,11 @@ void MainWindow::createMenu()
         clue->setEnabled(true);
         clue->setCheckable(true);
         connect(clue, SIGNAL(triggered()), this, SIGNAL(onCluePressed()));
+
+        enableValidation = settingsMenu->addAction("Enable Validation\tCtrl+V");
+        enableValidation->setEnabled(true);
+        enableValidation->setCheckable(true);
+        connect(enableValidation, SIGNAL(triggered()), this, SIGNAL(onEnableValidationPressed()));
     }
 }
 
