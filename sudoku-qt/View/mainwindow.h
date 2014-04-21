@@ -62,6 +62,7 @@ namespace View {
         void onEnableNotesPressed();
         void onEnableValidationPressed();
         void onCluePressed();
+        void closeThread();
 
     private slots:
         void fieldChanged(QString text);
@@ -80,6 +81,9 @@ namespace View {
         Ui::MainWindow *ui;
         FocusLineEdit *fields[9][9];
         QLabel *labels[9][9];
+
+    protected:
+         void closeEvent(QCloseEvent *event);
     };
 }
 

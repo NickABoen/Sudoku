@@ -51,7 +51,7 @@ MainController::MainController(): QObject(NULL),
     connect(&view, SIGNAL(onEnableValidationPressed()), this, SLOT(onEnableValidation()));
     connect(&view, SIGNAL(onCluePressed()), this, SLOT(onClues()));
     connect(ctimer, SIGNAL(timeout()), this,SLOT(giveClues()));
-    connect(&view, SIGNAL(view::closeEvent()), this, SLOT(endThread()));
+    connect(&view, SIGNAL(closeThread()), this, SLOT(endThread()));
 
     numHints = 1;
 

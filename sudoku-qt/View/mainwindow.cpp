@@ -100,6 +100,11 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::closeEvent(QCloseEvent *event) {
+    emit(closeThread());
+    QMainWindow::closeEvent(event);
+}
+
 void MainWindow::fieldChanged(QString text)
 {
     FocusLineEdit *field = (FocusLineEdit *)sender();
@@ -335,5 +340,6 @@ void MainWindow::createMenu()
         enableValidation->setCheckable(true);
         connect(enableValidation, SIGNAL(triggered()), this, SIGNAL(onEnableValidationPressed()));
     }
+
 }
 
