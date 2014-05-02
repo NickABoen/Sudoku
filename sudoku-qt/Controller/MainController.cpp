@@ -24,6 +24,7 @@ using namespace Controller;
 
 bool clearRedoStack = true;
 bool enableUndoRedo = true;
+int numHints;
 
 //////////////////////////////////////////////////////////////////////////////////
 // Constructor for MainController
@@ -54,11 +55,13 @@ MainController::MainController(): QObject(NULL),
     connect(&view, SIGNAL(onGenerateBoardPressed()), this, SLOT(onGenerateBoard()));
     connect(&view, SIGNAL(onHintPressed()), this, SLOT(onHint()));
     connect(&view, SIGNAL(onEnableNotesPressed()), this, SLOT(onEnableNotes()));
+    connect(&view, SIGNAL(onEnableValidationPressed()), this, SLOT(onEnableValidation()));
     connect(&view, SIGNAL(onScoreBoardPressed()), this, SLOT(onToggleScoreBoard()));
     connect(&view, SIGNAL(onCluePressed()), this, SLOT(onClues()));
     connect(ctimer, SIGNAL(timeout()), this,SLOT(giveClues()));
-    connect(&view, SIGNAL(view::close()), this, SLOT(endThread()));
+    connect(&view, SIGNAL(closeThread()), this, SLOT(endThread()));
 
+    numHints = 1;
 
     view.centralWidget()->setEnabled(false);
     timerThread = new GameTimer(&view);
@@ -69,6 +72,7 @@ MainController::MainController(): QObject(NULL),
 void MainController::endThread()
 {
     timerThread->terminate();
+    view.close();
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -172,7 +176,7 @@ void MainController::onLoadProgress() {
         timerThread->setPuzzle(puzzle);
         timerThread->resetTimer();
         timerThread->paused = false;
-        timerThread->start();
+
         enableUndoRedo = false;
         displayDefaultBoard();
         displayCurrentBoard();
@@ -234,6 +238,7 @@ void MainController::onLoadPuzzle(){
     QString filePath;
     QFileDialog* fileDialog = new QFileDialog(&view, "Load Puzzle", "", "*.txt");
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first(); //If user specifies more than one file only take first??
+    view.DisableScoreboardView();
     if(filePath != "")
     {
         if(test) testfile << "MC16 FilePath is not empty\n";
@@ -333,9 +338,23 @@ void MainController::onMakeMove(int* moveArray){
             clearRedoStack = true;
         }
     }
-
-    // Make move and check if completed
+    //make move
     puzzle->currentBoard[x][y] = value;
+
+    //Board Validation here
+    bool valid = true;
+    if(view.isValidationEnabled()) {
+        if (value != 0) {
+            valid = validateBoard(value,x,y);
+            qDebug() << "Validation: " + QString::number(valid);
+        }
+    }
+    if (!valid) {
+        view.changeColor(x,y);
+    } else {
+        view.resetColor(x,y);
+    }
+    // check if completed
     if(puzzle->checkCompleted()){
         if(test) testfile << "MC29 Puzzle is completed\n";
         QMessageBox msgBox;
@@ -358,7 +377,6 @@ void MainController::onMakeMove(int* moveArray){
         QAbstractButton *progressBtn = msgBox.addButton(trUtf8("Load Progress"), QMessageBox::NoRole);
         QAbstractButton *generateBtn = msgBox.addButton(trUtf8("Generate Puzzle"), QMessageBox::NoRole);
         msgBox.exec();
-
         if(msgBox.clickedButton() == puzzleBtn){
             if(test) testfile << "MC30 MessageBox Load Puzzle button clicked\n";
             onLoadPuzzle();
@@ -384,6 +402,7 @@ void MainController::onGenerateBoard(){
     DifficultySelector *DS = new DifficultySelector();
     BoardGenerator *BG = new BoardGenerator();
     timerThread->paused = true;
+    view.DisableScoreboardView();
     if(puzzle != NULL){
         //User started game, do they want to save progress?
         QMessageBox msgBox;
@@ -416,21 +435,21 @@ void MainController::onGenerateBoard(){
         view.clearBoard();
         delete puzzle;
     }
+    qDebug() << "test1";
     view.notesEnabled = false;
     view.enableNotes->setChecked(false);
     view.clearLabels();
     puzzle = new Puzzle();
+    qDebug() << "test2";
     DS->setFixedSize(192,145);
+    qDebug() << "test3";
     DS->exec();
+    qDebug() << "test4";
     int res = DS->DS;
-    qDebug()<<"test3";
     if(res > 0){
-        qDebug()<<"test4";
         puzzle->defaultBoard = BG->ConvertBoard(BG->Generate(res));
-        qDebug()<<"test5";
         puzzle->solvedBoard = BG->ConvertBoard(BG->FinalBoard);
 
-        qDebug()<<"test6";
         InitializeScoreBoard();
 
         enableUndoRedo = false;
@@ -453,6 +472,8 @@ void MainController::onGenerateBoard(){
 
 void MainController::onHint(){
     //this needs to be optimized.
+    timerThread->runningTime += numHints *5000;
+    numHints++;
     int x = rand() % 9;
     int y = rand() % 9;
     while(puzzle->currentBoard[x][y] != 0){
@@ -478,9 +499,19 @@ void MainController::onToggleScoreBoard()
     }
     else
     {
+        qDebug() << "Showing Board";
+        scoreboardModel->debug();
+        qDebug() << "\tTesting Board";
         view.EnableScoreboardView(scoreboardModel);
+        qDebug() << "Board Shown";
     }
     scoreboardEnabled = !scoreboardEnabled;
+}
+void MainController::onEnableValidation() {
+    qDebug() << "IN YO SHIZZ.";
+    bool enabled = view.isValidationEnabled();
+    view.setValidationEnabled(!enabled);
+    view.enableValidation->setChecked(!enabled);
 }
 
 void MainController::InitializeScoreBoard()
@@ -489,7 +520,8 @@ void MainController::InitializeScoreBoard()
     //qDebug() << scoreboardModel->debug().toUtf8().constData();
     delete scoreboardModel;
     scoreboardModel = new ScoreboardTableModel(0,&(puzzle->scoreboardList));
-    view.SetTableViewModel(scoreboardModel);
+    //view.SetTableViewModel(scoreboardModel);
+    view.EnableScoreboardView(scoreboardModel);
     qDebug()<<"Finished Initializing";
     //qDebug() << scoreboardModel->debug().toUtf8().constData();
 
@@ -613,7 +645,35 @@ void MainController::onClear(){
     view.clearAction->setEnabled(false);
 }
 
-//filepath included as parameter for "quiet" saving so that
+bool MainController::validateBoard(int value, int x, int y) {
+    //rows and cols
+    for (int i = 0; i < 9; i++) {
+        if (i != x && puzzle->currentBoard[i][y] == value) {
+            return false;
+        }
+        if (i != y && puzzle->currentBoard[x][i] == value) {
+            return false;
+        }
+    }
+    //section
+    int sectionX = x/3;
+    int sectionY = y/3;
+    int secX = sectionX*3;
+    int secY = sectionY*3;
+
+    for(int i=secX; i <= secX + 2; i++) {
+        for(int j = secY; j <= secY + 2; j++) {
+            if (i != x && j != y) {
+                if (puzzle->currentBoard[i][j] == value) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+//included as parameter for "quiet" saving so that
 //the user doesn't need to select the puzzle file in order
 //to update the scoreboard list
 void MainController::storeFilePath(QString filePath)

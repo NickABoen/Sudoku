@@ -57,7 +57,8 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     focusedField[0] = 0;
     focusedField[1] = 0;
-    enableNotes = false;
+    notesEnabled = false;
+    validationEnabled = false;
     originalSize = this->getWindowSize();
     scoreboardSize = new QSize(originalSize.width() * 2, originalSize.height());
 
@@ -108,6 +109,11 @@ MainWindow::~MainWindow()
     //buttons are deleted when ui is deleted since it is parent, see Qt documentation
     delete ui;
     delete scoreboardView;
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    emit(closeThread());
+    QMainWindow::closeEvent(event);
 }
 
 void MainWindow::fieldChanged(QString text)
@@ -262,10 +268,17 @@ bool MainWindow::isFieldEnabled(int i, int j) {
 bool MainWindow::isNotesEnabled() {
     return notesEnabled;
 }
+bool MainWindow::isValidationEnabled() {
+    return validationEnabled;
+}
 
 void MainWindow::setNotesEnabled(bool enabled) {
     notesEnabled = enabled;
 }
+void MainWindow::setValidationEnabled(bool enabled) {
+    validationEnabled = enabled;
+}
+
 void MainWindow::changeColor(int x, int y)
 {
     fields[x][y]->setStyleSheet("QLineEdit{color: white; background: red;font: 28pt;}");
@@ -372,7 +385,11 @@ void MainWindow::createMenu()
         clue->setCheckable(true);
         connect(clue, SIGNAL(triggered()), this, SIGNAL(onCluePressed()));
 
-
+        enableValidation = settingsMenu->addAction("Enable Validation\tCtrl+V");
+        enableValidation->setEnabled(true);
+        enableValidation->setCheckable(true);
+        connect(enableValidation, SIGNAL(triggered()), this, SIGNAL(onEnableValidationPressed()));
     }
+
 }
 

@@ -38,6 +38,7 @@ namespace Controller{
         void onClear();
         void onHint();
         void onEnableNotes();
+        void onEnableValidation();
         void onToggleScoreBoard();
         void onClues();
         void giveClues();
@@ -52,6 +53,7 @@ namespace Controller{
         void InitializeScoreBoard();
         void addScore(QString playerName, int score);
         bool clueTimer;
+        bool validationEnabled;
         bool scoreboardEnabled;
         QTimer *ctimer;
         Model::Puzzle* puzzle;
@@ -59,6 +61,7 @@ namespace Controller{
         Model::PuzzleSerializer puzzleSerializer;
         View::MainWindow view;
         void storeFilePath(QString filePath = "");
+        bool validateBoard(int value, int x, int y);
         Model::GameTimer *timerThread;
         Model::ScoreboardTableModel *scoreboardModel;
     };
