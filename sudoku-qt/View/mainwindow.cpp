@@ -6,6 +6,9 @@
 #include <QKeyEvent>
 #include <QMessageBox>
 #include <QShortcut>
+#include <QApplication>
+#include <QTableView>
+#include <QSortFilterProxyModel>
 
 using namespace View;
 
@@ -55,6 +58,13 @@ MainWindow::MainWindow(QWidget *parent) :
     focusedField[0] = 0;
     focusedField[1] = 0;
     enableNotes = false;
+    originalSize = this->getWindowSize();
+    scoreboardSize = new QSize(originalSize.width() * 2, originalSize.height());
+
+    scoreboardView = new QTableView(this);
+    scoreboardView->move(originalSize.width() + pad, (2 * pad));
+    scoreboardView->resize(originalSize.width() - (2 * pad), originalSize.height()- (3 * pad));
+    scoreboardView->hide();
 
     QFrame *line0 = new QFrame(ui->centralWidget);
     line0->setFrameShape(QFrame::HLine);
@@ -83,6 +93,7 @@ MainWindow::MainWindow(QWidget *parent) :
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_U), this, SIGNAL(onUndoPressed()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R), this, SIGNAL(onRedoPressed()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_E), this, SIGNAL(onEnableNotesPressed()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this, SIGNAL(onScoreBoardPressed()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this, SIGNAL(onCluePressed()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_T), this, SIGNAL(onHintPressed()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_G), this, SIGNAL(onGenerateBoardPressed()));
@@ -96,6 +107,7 @@ MainWindow::~MainWindow()
 {
     //buttons are deleted when ui is deleted since it is parent, see Qt documentation
     delete ui;
+    delete scoreboardView;
 }
 
 void MainWindow::fieldChanged(QString text)
@@ -265,6 +277,40 @@ void MainWindow::resetColor(int x, int y)
     fields[x][y]->setStyleSheet("QLineEdit{font: 28pt;}");
 }
 
+QSize MainWindow::getWindowSize()
+{
+    return this->size();
+}
+
+void MainWindow::setWindowSize(QSize newSize)
+{
+    if(newSize.width() > this->maximumWidth())
+        newSize.setWidth(this->maximumWidth() - 1);
+    if(newSize.height() > this->maximumHeight())
+        newSize.setHeight(this->maximumHeight() - 1);
+
+    this->resize(newSize);
+}
+
+void MainWindow::DisableScoreboardView()
+{
+    this->setWindowSize(originalSize);
+    scoreboardView->hide();
+}
+
+void MainWindow::EnableScoreboardView(QAbstractItemModel * model)
+{
+    this->setWindowSize(*scoreboardSize);
+    this->SetTableViewModel(model);
+    scoreboardView->show();
+}
+
+void MainWindow::SetTableViewModel(QAbstractItemModel * model)
+{
+    scoreboardView->setModel(model);
+    scoreboardView->sortByColumn(1);
+}
+
 void MainWindow::createMenu()
 {
     QMenu *fileMenu = ui->menuBar->addMenu("File");
@@ -316,10 +362,17 @@ void MainWindow::createMenu()
         enableNotes->setCheckable(true);
         connect(enableNotes, SIGNAL(triggered()), this, SIGNAL(onEnableNotesPressed()));
 
+        scoreBoard = settingsMenu->addAction("Toggle Scoreboard");
+        scoreBoard->setEnabled(true);
+        scoreBoard->setCheckable(true);
+        connect(scoreBoard, SIGNAL(triggered()), this, SIGNAL(onScoreBoardPressed()));
+
         clue = settingsMenu->addAction("Enable Clues\tCtrl+L");
         clue->setEnabled(true);
         clue->setCheckable(true);
         connect(clue, SIGNAL(triggered()), this, SIGNAL(onCluePressed()));
+
+
     }
 }
 

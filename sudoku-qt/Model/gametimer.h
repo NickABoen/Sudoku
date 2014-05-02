@@ -19,6 +19,7 @@ namespace Model
         Puzzle *puzzle;
         QElapsedTimer *GTimer;
         int runningTime;
+        int currentTime;
         void setPuzzle(Puzzle *p);
         void resetTimer();
         virtual void run();

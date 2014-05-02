@@ -4,6 +4,7 @@
 #include "Move.h"
 #include "Puzzle.h"
 #include "../test.h"
+#include "ScoreboardTableModel.h"
 
 #include <QDebug>
 #include <QFileDialog>
@@ -14,6 +15,7 @@
 #include <QTimer>
 #include <QEventLoop>
 #include <QThread>
+#include <QInputDialog>
 
 extern bool test;
 extern std::ofstream testfile;
@@ -34,7 +36,12 @@ MainController::MainController(): QObject(NULL),
 {
     if(test) testfile << "MC1  ####################### MainController constructor #######################\n";
     clueTimer = false;
+    scoreboardEnabled = false;
     ctimer = new QTimer(this);
+
+    qDebug() << "Temporary Initialization of scoreboardModel";
+    scoreboardModel = new ScoreboardTableModel(0,NULL);
+
     //Connect all signals and slots
     connect(&view, SIGNAL(onUndoPressed()), this, SLOT(onUndoMove()));
     connect(&view, SIGNAL(onRedoPressed()), this, SLOT(onRedoMove()));
@@ -47,6 +54,7 @@ MainController::MainController(): QObject(NULL),
     connect(&view, SIGNAL(onGenerateBoardPressed()), this, SLOT(onGenerateBoard()));
     connect(&view, SIGNAL(onHintPressed()), this, SLOT(onHint()));
     connect(&view, SIGNAL(onEnableNotesPressed()), this, SLOT(onEnableNotes()));
+    connect(&view, SIGNAL(onScoreBoardPressed()), this, SLOT(onToggleScoreBoard()));
     connect(&view, SIGNAL(onCluePressed()), this, SLOT(onClues()));
     connect(ctimer, SIGNAL(timeout()), this,SLOT(giveClues()));
     connect(&view, SIGNAL(view::close()), this, SLOT(endThread()));
@@ -264,6 +272,8 @@ void MainController::onLoadPuzzle(){
         view.clearLabels();
         puzzle = puzzleSerializer.deserialize(filePath);
 
+        InitializeScoreBoard();
+
         timerThread->setPuzzle(puzzle);
         timerThread->resetTimer();
         timerThread->paused = false;
@@ -329,6 +339,19 @@ void MainController::onMakeMove(int* moveArray){
     if(puzzle->checkCompleted()){
         if(test) testfile << "MC29 Puzzle is completed\n";
         QMessageBox msgBox;
+        bool ok;
+        QString playerName = QInputDialog::getText(msgBox.parentWidget(),tr("Input your name for your score"),
+                                                   tr("Player Name:"),
+                                                   QLineEdit::Normal,QDir::home().dirName(),&ok);
+
+
+        if(ok)
+        {
+            qDebug() << "Adding Score to ScoreboardList";
+            addScore(playerName, timerThread->currentTime);
+            qDebug() << "Finished Adding Score";
+        }
+
         msgBox.setText("You have sucessfully completed the puzzle!");
         msgBox.setInformativeText("Do you want to start a new puzzle or progress?");
         QAbstractButton *puzzleBtn = msgBox.addButton(trUtf8("Load Puzzle"), QMessageBox::YesRole);
@@ -377,6 +400,7 @@ void MainController::onGenerateBoard(){
             qDebug() << "Setting Puzzle Time";
             timerThread->setPuzzle(puzzle);
             timerThread->paused = false;
+            //timerThread->resetTimer();
             timerThread->start();
         }
         else if(ret == msgBox.Discard){
@@ -399,9 +423,15 @@ void MainController::onGenerateBoard(){
     DS->setFixedSize(192,145);
     DS->exec();
     int res = DS->DS;
+    qDebug()<<"test3";
     if(res > 0){
+        qDebug()<<"test4";
         puzzle->defaultBoard = BG->ConvertBoard(BG->Generate(res));
+        qDebug()<<"test5";
         puzzle->solvedBoard = BG->ConvertBoard(BG->FinalBoard);
+
+        qDebug()<<"test6";
+        InitializeScoreBoard();
 
         enableUndoRedo = false;
         displayDefaultBoard();
@@ -435,10 +465,48 @@ void MainController::onHint(){
 }
 
 void MainController::onEnableNotes() {
-    //need to set up a disable function as well. Will get there
     bool enabled = view.isNotesEnabled();
     view.setNotesEnabled(!enabled);
     view.enableNotes->setChecked(!enabled);
+}
+
+void MainController::onToggleScoreBoard()
+{
+    if(scoreboardEnabled)
+    {
+        view.DisableScoreboardView();
+    }
+    else
+    {
+        view.EnableScoreboardView(scoreboardModel);
+    }
+    scoreboardEnabled = !scoreboardEnabled;
+}
+
+void MainController::InitializeScoreBoard()
+{
+    qDebug() << "Initializing Scoreboard";
+    //qDebug() << scoreboardModel->debug().toUtf8().constData();
+    delete scoreboardModel;
+    scoreboardModel = new ScoreboardTableModel(0,&(puzzle->scoreboardList));
+    view.SetTableViewModel(scoreboardModel);
+    qDebug()<<"Finished Initializing";
+    //qDebug() << scoreboardModel->debug().toUtf8().constData();
+
+}
+
+void MainController::addScore(QString playerName, int score)
+{
+    if(scoreboardModel != NULL)
+    {
+        qDebug() << "Adding " << score << " to " << playerName.toUtf8().constData();
+        scoreboardModel->addScore(playerName, score);
+        qDebug() << "Setting Table View Model";
+        view.SetTableViewModel(scoreboardModel);
+        qDebug() << "Saving the Score";
+        storeFilePath(puzzle->filePathRef);
+    }
+
 }
 
 void MainController::onClues(){
@@ -545,10 +613,23 @@ void MainController::onClear(){
     view.clearAction->setEnabled(false);
 }
 
-void MainController::storeFilePath() {
-    QString filePath;
-    QFileDialog* fileDialog = new QFileDialog();
-    filePath = fileDialog->getSaveFileName(&view, "Save file", "", "*.txt");
+//filepath included as parameter for "quiet" saving so that
+//the user doesn't need to select the puzzle file in order
+//to update the scoreboard list
+void MainController::storeFilePath(QString filePath)
+{
+    qDebug() << "Entering File Serialization";
+    if(filePath == "")
+    {
+        qDebug()<<"\tOpening File Dialog";
+        QFileDialog* fileDialog = new QFileDialog();
+        filePath = fileDialog->getSaveFileName(&view, "Save file", "", "*.txt");
+    }
+    else
+    {
+        qDebug() << "Soft saving at: " << filePath.toUtf8().constData();
+        qDebug() << scoreboardModel->debug().toUtf8().constData();
+    }
 
     if(filePath != "")
     {

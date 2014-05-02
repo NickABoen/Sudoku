@@ -14,6 +14,7 @@ Puzzle::Puzzle():
     solvedBoard(new int*[9]),
     undo(),
     redo(),
+    scoreboardList(),
     currentTime(0)
 {
 

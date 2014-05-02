@@ -9,6 +9,7 @@
 #include <QLabel>
 #include <QInputDialog>
 #include <QElapsedTimer>
+#include <QTableView>
 
 namespace Ui {
 class MainWindow;
@@ -33,16 +34,25 @@ namespace View {
         void setNotesEnabled(bool enabled);
         void changeColor(int x, int y);
         void resetColor(int x, int y);
+        void DisableScoreboardView();
+        void EnableScoreboardView(QAbstractItemModel * model);
+        void SetTableViewModel(QAbstractItemModel * model);
+        QSize getWindowSize();
+        void setWindowSize(QSize newSize);
 
         QAction *undoAction;
         QAction *redoAction;
         QAction *clearAction;
         QAction *clue;
         QAction *enableNotes;
+        QAction *scoreBoard;
         QAction *disableNotes;
         QLabel *TIMER;
         int focusedField[2];
         bool notesEnabled;
+        QSize originalSize;
+        QSize* scoreboardSize;
+        QTableView *scoreboardView;
 
     signals:
         void onLoadProgressPressed();
@@ -56,6 +66,7 @@ namespace View {
         void onClearPressed();
         void onHintPressed();
         void onEnableNotesPressed();
+        void onScoreBoardPressed();
         void onCluePressed();
 
     private slots:
