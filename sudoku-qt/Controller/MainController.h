@@ -51,7 +51,7 @@ namespace Controller{
     private:
         void displayDefaultBoard();
         void displayCurrentBoard();
-        bool checkIfUnsavedProgressAndReset();
+        void checkIfUnsavedProgressAndReset();
         void InitializeScoreBoard();
         void addScore(QString playerName, int score);
         bool clueTimer;

@@ -9,7 +9,7 @@
 #include "ScoreboardTableModel.h"
 
 #include <string>
-#include <QDebug>
+#include <qDebug>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QAbstractButton>
@@ -23,7 +23,6 @@
 
 extern bool test;
 extern std::ofstream testfile;
-//typedef void(*functionPointer) ();
 using namespace Controller;
 
 bool clearRedoStack = true;
@@ -39,12 +38,11 @@ MainController::MainController(): QObject(NULL),
     currentProgressSerializer(),
     puzzleSerializer()
 {
-    if(test) testfile << "MC1  ####################### MainController constructor #######################\n";
     clueTimer = false;
     scoreboardEnabled = false;
     ctimer = new QTimer(this);
 
-    qDebug() << "Temporary Initialization of scoreboardModel";
+    //qDebug() << "Temporary Initialization of scoreboardModel";
     scoreboardModel = new ScoreboardTableModel(0,NULL);
 
     //Connect all signals and slots
@@ -85,8 +83,6 @@ void MainController::endThread()
 //////////////////////////////////////////////////////////////////////////////////
 MainController::~MainController(){
 
-    if(test) testfile << "MC2  ####################### MainController destructor #######################\n";
-
     if(puzzle != NULL) delete puzzle;
 }
 
@@ -94,16 +90,12 @@ MainController::~MainController(){
 // This function displays the default board on the gui
 //////////////////////////////////////////////////////////////////////////////////
 void MainController::displayDefaultBoard(){
-
-    if(test) testfile << "MC3  ####################### MainController displayDefalutBoard #######################\n";
-
     enableUndoRedo = false;
 
     //For all values in default board display on gui if non-zero
     for(int i = 0; i < 9; i++){
         for(int j = 0; j < 9; j++){
             if(puzzle->defaultBoard[i][j] != 0){
-                if(test) testfile << "MC4  Setting board values at " << i << "," << j << "=" << puzzle->currentBoard[i][j] << "\n";
                 int moveArray[3] = {puzzle->defaultBoard[i][j], i, j};
                 view.setMove(moveArray, false);
             }
@@ -122,7 +114,7 @@ void MainController::displayDefaultBoard(){
 //////////////////////////////////////////////////////////////////////////////////
 void MainController::displayCurrentBoard(){
 
-    if(test) testfile << "MC5  ####################### MainController displayCurrentBoard #######################\n";
+
 
     enableUndoRedo = false;
 
@@ -130,7 +122,7 @@ void MainController::displayCurrentBoard(){
     for(int i = 0; i < 9; i++){
         for(int j = 0; j < 9; j++){
             if(puzzle->currentBoard[i][j] != puzzle->defaultBoard[i][j]){
-                if(test) testfile << "MC6  Setting board values at " << i << "," << j << "=" << puzzle->currentBoard[i][j] << "\n";
+
                 int moveArray[3] = {puzzle->currentBoard[i][j], i, j};
                 view.setMove(moveArray, true);
             }
@@ -140,12 +132,12 @@ void MainController::displayCurrentBoard(){
     enableUndoRedo = true;
 
     if(puzzle->undo.count() > 0){
-        if(test) testfile << "MC9  Puzzle undo count > 0\n";
+
         view.clearAction->setEnabled(true);
         view.undoAction->setEnabled(true);
     }
     if(puzzle->redo.count() > 0){
-        if(test) testfile << "MC10 Puzzle redo count > 0\n";
+
         view.redoAction->setEnabled(true);
     }
 }
@@ -155,16 +147,16 @@ void MainController::displayCurrentBoard(){
 //////////////////////////////////////////////////////////////////////////////////
 void MainController::onLoadProgress() {
 
-    if(test) testfile << "MC7  ####################### MainController onLoadProgress #######################\n";
+
     timerThread->paused = true;
     QString filePath;
     QFileDialog* fileDialog = new QFileDialog(&view, "Load Progress", "", "*.txt");
     if(fileDialog->exec()) filePath = fileDialog->selectedFiles().first();
     if(filePath != "")
     {
-        if(test) testfile << "MC8  FilePath is not empty\n";
+
         if(puzzle != NULL){
-            if(test) testfile << "MC36 Puzzle is not NULL\n";
+
             //User started game, do they want to save progress?
             QMessageBox msgBox;
             msgBox.setText("You have unsaved progress.");
@@ -174,17 +166,17 @@ void MainController::onLoadProgress() {
             int ret = msgBox.exec();
 
             if(ret == msgBox.Save){
-                if(test) testfile << "MC37 MessageBox save button clicked\n";
+
                 //Save user progress
                 onSaveProgress();
             }
             else if(ret == msgBox.Discard){
-                if(test) testfile << "MC38 MessageBox discard button clicked\n";
+
                 //Discard user progress
                 //Do nothing
             }
             else if(ret == msgBox.Cancel){
-                if(test) testfile << "MC39 MessageBox cancel button clicked\n";
+
                 //Don't save or discard progress
                 return;
             }
@@ -204,25 +196,22 @@ void MainController::onLoadProgress() {
         timerThread->resetTimer();
         timerThread->paused = false;
 
-        enableUndoRedo = false;
         displayDefaultBoard();
         displayCurrentBoard();
-        enableUndoRedo = true;
 
         if(puzzle->undo.count() > 0){
-            if(test) testfile << "MC9  Puzzle undo count > 0\n";
+
             view.clearAction->setEnabled(true);
             view.undoAction->setEnabled(true);
         }
         if(puzzle->redo.count() > 0){
-            if(test) testfile << "MC10 Puzzle redo count > 0\n";
+
             view.redoAction->setEnabled(true);
         }
 
-        view.centralWidget()->setEnabled(true);
     }
     else{
-        if(test) testfile << "MC11 Filepath was empty\n";
+
         //Popup error message...
         //TODO
     }
@@ -233,7 +222,7 @@ void MainController::onLoadProgress() {
 //////////////////////////////////////////////////////////////////////////////////
 void MainController::onSaveProgress(){
 
-    if(test) testfile << "MC12 ####################### MainController onSaveProgress #######################\n";
+
 
     timerThread->paused = true;
     QString filePath;
@@ -242,11 +231,11 @@ void MainController::onSaveProgress(){
 
     if(filePath != "")
     {
-        if(test) testfile << "MC13 FilePath is not empty\n";
+
         currentProgressSerializer.serialize(puzzle, filePath);
     }
     else{
-        if(test) testfile << "MC14 Filepath was empty\n";
+
         //Popup error message...
         //TODO
     }
@@ -260,7 +249,7 @@ void MainController::onSaveProgress(){
 //////////////////////////////////////////////////////////////////////////////////
 void MainController::onLoadPuzzle(){
 
-    if(test) testfile << "MC15 ####################### MainController onLoadPuzzle #######################\n";
+
     timerThread->paused = true;
     QString filePath;
     QFileDialog* fileDialog = new QFileDialog(&view, "Load Puzzle", "", "*.txt");
@@ -268,37 +257,10 @@ void MainController::onLoadPuzzle(){
     view.DisableScoreboardView();
     if(filePath != "")
     {
-        if(test) testfile << "MC16 FilePath is not empty\n";
-        if(puzzle != NULL){
-            if(test) testfile << "MC17 Puzzle is not NULL\n";
-            //User started game, do they want to save progress?
-            QMessageBox msgBox;
-            msgBox.setText("You have unsaved progress.");
-            msgBox.setInformativeText("Do you want to save your progress?");
-            msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-            msgBox.setDefaultButton(QMessageBox::Save);
-            int ret = msgBox.exec();
 
-            if(ret == msgBox.Save){
-                if(test) testfile << "MC18 MessageBox save button clicked\n";
-                //Save user progress
-                onSaveProgress();
-            }
-            else if(ret == msgBox.Discard){
-                if(test) testfile << "MC19 MessageBox discard button clicked\n";
-                //Discard user progress
-                //Do nothing
-            }
-            else if(ret == msgBox.Cancel){
-                if(test) testfile << "MC20 MessageBox cancel button clicked\n";
-                //Don't save or discard progress
-                return;
-            }
 
-            //User done saving/discarding game, clear board and delete puzzle
-            view.clearBoard();
-            delete puzzle;
-        }
+        checkIfUnsavedProgressAndReset();
+
         view.notesEnabled = false;
         view.enableNotes->setChecked(false);
         view.clearLabels();
@@ -310,18 +272,11 @@ void MainController::onLoadPuzzle(){
         timerThread->resetTimer();
         timerThread->paused = false;
         timerThread->start();
-        enableUndoRedo = false;
+
         displayDefaultBoard();
-        enableUndoRedo = true;
-
-        view.centralWidget()->setEnabled(true);
-
-        view.undoAction->setEnabled(false);
-        view.redoAction->setEnabled(false);
-        view.clearAction->setEnabled(false);
     }
     else{
-        if(test) testfile << "MC21 Filepath was empty\n";
+
         //Popup error message...
         //TODO
     }
@@ -332,7 +287,7 @@ void MainController::onLoadPuzzle(){
 //////////////////////////////////////////////////////////////////////////////////
 void MainController::onSavePuzzle(){
 
-    if(test) testfile << "MC22 ####################### MainController onSavePuzzle #######################\n";
+
 
     storeFilePath();
 }
@@ -342,7 +297,7 @@ void MainController::onSavePuzzle(){
 //////////////////////////////////////////////////////////////////////////////////
 void MainController::onMakeMove(int* moveArray){
 
-    if(test) testfile << "MC25 ####################### MainController onMakeMove #######################\n";
+
 
     int value = moveArray[0];
     int x = moveArray[1];
@@ -350,9 +305,9 @@ void MainController::onMakeMove(int* moveArray){
 
     // Deal with undo/redo
     if(enableUndoRedo){
-        if(test) testfile << "MC26 UndoRedo is enabled\n";
+
         if(clearRedoStack){
-            if(test) testfile << "MC27 ClearRedoStack is true\n";
+
             puzzle->undo.push(Model::Move( x, y, puzzle->currentBoard[x][y]));
             view.clearAction->setEnabled(true);
             view.undoAction->setEnabled(true);
@@ -361,7 +316,7 @@ void MainController::onMakeMove(int* moveArray){
             view.redoAction->setEnabled(false);
         }
         else{
-            if(test) testfile << "MC28 ClearRedoStack is false\n";
+
             clearRedoStack = true;
         }
     }
@@ -373,7 +328,7 @@ void MainController::onMakeMove(int* moveArray){
     if(view.isValidationEnabled()) {
         if (value != 0) {
             valid = validateBoard(value,x,y);
-            qDebug() << "Validation: " + QString::number(valid);
+            //qDebug() << "Validation: " + QString::number(valid);
         }
     }
     if (!valid) {
@@ -387,7 +342,7 @@ void MainController::onMakeMove(int* moveArray){
         timerThread->paused = true;
         timerThread->resetTimer();
 
-        if(test) testfile << "MC29 Puzzle is completed\n";
+
         QMessageBox msgBox;
         bool ok;
         QString playerName = QInputDialog::getText(msgBox.parentWidget(),tr("Input your name for your score"),
@@ -397,9 +352,9 @@ void MainController::onMakeMove(int* moveArray){
 
         if(ok)
         {
-            qDebug() << "Adding Score to ScoreboardList";
+            //qDebug() << "Adding Score to ScoreboardList";
             addScore(playerName, timerThread->currentTime);
-            qDebug() << "Finished Adding Score";
+            //qDebug() << "Finished Adding Score";
         }
 
         msgBox.setText("You have sucessfully completed the puzzle!");
@@ -410,20 +365,20 @@ void MainController::onMakeMove(int* moveArray){
         QAbstractButton *generateImgBtn =  msgBox.addButton(trUtf8("Generate Puzzle from Image"), QMessageBox::NoRole);
         msgBox.exec();
         if(msgBox.clickedButton() == puzzleBtn){
-            if(test) testfile << "MC30 MessageBox Load Puzzle button clicked\n";
+
             onLoadPuzzle();
         }
         else if (msgBox.clickedButton() == progressBtn){
-            if(test) testfile << "MC40 MessageBox Load Progress button clicked\n";
+
             onLoadProgress();
         }
         else if (msgBox.clickedButton() == generateBtn){
-            if(test) testfile << "MC40 MessageBox Generate Puzzle button clicked\n";
+
             onGenerateBoard();
         }
 
         else if (msgBox.clickedButton() == generateImgBtn){
-            if(test) testfile << "MC40 MessageBox Generate Puzzle from Image button clicked\n";
+
             onGenerateBoardFromImage();
         }
     }
@@ -440,66 +395,30 @@ void MainController::onGenerateBoard(){
     BoardGenerator *BG = new BoardGenerator();
     timerThread->paused = true;
     view.DisableScoreboardView();
-    if(puzzle != NULL){
-        //User started game, do they want to save progress?
-        QMessageBox msgBox;
-        msgBox.setText("You have unsaved progress.");
-        msgBox.setInformativeText("Do you want to save your progress?");
-        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Save);
-        int ret = msgBox.exec();
 
-        if(ret == msgBox.Save){
-            //Save user progress
-            onSavePuzzle();
-            clueTimer = false;
-            qDebug() << "Setting Puzzle Time";
-            timerThread->setPuzzle(puzzle);
-            timerThread->paused = false;
-            //timerThread->resetTimer();
-            timerThread->start();
-        }
-        else if(ret == msgBox.Discard){
-            //Discard user progress
-            //Do nothing
-        }
-        else if(ret == msgBox.Cancel){
-            //Don't save or discard progress
-            return;
-        }
+    checkIfUnsavedProgressAndReset();
 
-        //User done saving/discarding game, clear board and delete puzzle
-        view.clearBoard();
-        delete puzzle;
-    }
-    qDebug() << "test1";
+    //qDebug() << "test1";
     view.notesEnabled = false;
     view.enableNotes->setChecked(false);
     view.clearLabels();
     puzzle = new Puzzle();
-    qDebug() << "test2";
+    //qDebug() << "test2";
     DS->setFixedSize(192,145);
-    qDebug() << "test3";
+    //qDebug() << "test3";
     DS->exec();
-    qDebug() << "test4";
+    //qDebug() << "test4";
     int res = DS->DS;
     if(res > 0){
         puzzle->defaultBoard = BG->ConvertBoard(BG->Generate(res));
         puzzle->solvedBoard = BG->ConvertBoard(BG->FinalBoard);
 
         InitializeScoreBoard();
-
-        enableUndoRedo = false;
         displayDefaultBoard();
-        enableUndoRedo = true;
 
-        view.centralWidget()->setEnabled(true);
-        view.undoAction->setEnabled(false);
-        view.redoAction->setEnabled(false);
-        view.clearAction->setEnabled(false);
         storeFilePath();
         clueTimer = false;
-        qDebug() << "Setting Puzzle Time";
+        //qDebug() << "Setting Puzzle Time";
         timerThread->resetTimer();
         timerThread->setPuzzle(puzzle);
         timerThread->paused = false;
@@ -508,40 +427,14 @@ void MainController::onGenerateBoard(){
 }
 
 //////////////////////////////////////////////////////////////////////////////////
+// This function is called to generate a new puzzle from an existing image.
+//////////////////////////////////////////////////////////////////////////////////
 void MainController::onGenerateBoardFromImage()
 {
     timerThread->paused = true;
-    if(puzzle != NULL){
-        //User started game, do they want to save progress?
-        QMessageBox msgBox;
-        msgBox.setText("You have unsaved progress.");
-        msgBox.setInformativeText("Do you want to save your progress?");
-        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Save);
-        int ret = msgBox.exec();
 
-        if(ret == msgBox.Save){
-            //Save user progress
-            onSavePuzzle();
-            clueTimer = false;
-            qDebug() << "Setting Puzzle Time";
-            timerThread->setPuzzle(puzzle);
-            timerThread->paused = false;
-            timerThread->start();
-        }
-        else if(ret == msgBox.Discard){
-            //Discard user progress
-            //Do nothing
-        }
-        else if(ret == msgBox.Cancel){
-            //Don't save or discard progress
-            return;
-        }
+    checkIfUnsavedProgressAndReset();
 
-        //User done saving/discarding game, clear board and delete puzzle
-        view.clearBoard();
-        delete puzzle;
-    }
     view.notesEnabled = false;
     view.enableNotes->setChecked(false);
     view.clearLabels();
@@ -555,17 +448,17 @@ void MainController::onGenerateBoardFromImage()
     ImagePuzzleGenerator gen;
     puzzle = gen.generate(filePath);
 
-    enableUndoRedo = false;
-    displayDefaultBoard();
-    enableUndoRedo = true;
+    if(puzzle == NULL)
+    {
+        QMessageBox::about(&view, "Board Generation from Image", "Error: there was a problem while trying to generate board from image. Please try with a different image");
+        return;
+    }
 
-    view.centralWidget()->setEnabled(true);
-    view.undoAction->setEnabled(false);
-    view.redoAction->setEnabled(false);
-    view.clearAction->setEnabled(false);
+    displayDefaultBoard();
+
     storeFilePath();
     clueTimer = false;
-    qDebug() << "Setting Puzzle Time";
+    //qDebug() << "Setting Puzzle Time";
     timerThread->resetTimer();
     timerThread->setPuzzle(puzzle);
     timerThread->paused = false;
@@ -573,6 +466,8 @@ void MainController::onGenerateBoardFromImage()
 
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+// This function is called when a hint needs to be shown.
 //////////////////////////////////////////////////////////////////////////////////
 void MainController::onHint(){
     //this needs to be optimized.
@@ -593,12 +488,16 @@ void MainController::onHint(){
 }
 
 //////////////////////////////////////////////////////////////////////////////////
+// This function is called to enable notes.
+//////////////////////////////////////////////////////////////////////////////////
 void MainController::onEnableNotes() {
     bool enabled = view.isNotesEnabled();
     view.setNotesEnabled(!enabled);
     view.enableNotes->setChecked(!enabled);
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+// This function is called to show and hide the score board.
 //////////////////////////////////////////////////////////////////////////////////
 void MainController::onToggleScoreBoard()
 {
@@ -608,54 +507,68 @@ void MainController::onToggleScoreBoard()
     }
     else
     {
-        qDebug() << "Showing Board";
+        //qDebug() << "Showing Board";
         scoreboardModel->debug();
-        qDebug() << "\tTesting Board";
+        //qDebug() << "\tTesting Board";
         view.EnableScoreboardView(scoreboardModel);
-        qDebug() << "Board Shown";
+        //qDebug() << "Board Shown";
     }
     scoreboardEnabled = !scoreboardEnabled;
 }
+
+//////////////////////////////////////////////////////////////////////////////////
+// This function is called to enable move validation.
+//////////////////////////////////////////////////////////////////////////////////
 void MainController::onEnableValidation() {
-    qDebug() << "IN YO SHIZZ.";
+    //qDebug() << "IN YO SHIZZ.";
     bool enabled = view.isValidationEnabled();
     view.setValidationEnabled(!enabled);
     view.enableValidation->setChecked(!enabled);
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+// This function is called to initialize the score board.
+//////////////////////////////////////////////////////////////////////////////////
 void MainController::InitializeScoreBoard()
 {
-    qDebug() << "Initializing Scoreboard";
-    //qDebug() << scoreboardModel->debug().toUtf8().constData();
+    //qDebug() << "Initializing Scoreboard";
+    ////qDebug() << scoreboardModel->debug().toUtf8().constData();
     delete scoreboardModel;
     scoreboardModel = new ScoreboardTableModel(0,&(puzzle->scoreboardList));
     //view.SetTableViewModel(scoreboardModel);
     view.EnableScoreboardView(scoreboardModel);
-    qDebug()<<"Finished Initializing";
-    //qDebug() << scoreboardModel->debug().toUtf8().constData();
+    //qDebug()<<"Finished Initializing";
+    ////qDebug() << scoreboardModel->debug().toUtf8().constData();
 
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+// This function is called to add a score to the score board.
+//////////////////////////////////////////////////////////////////////////////////
 void MainController::addScore(QString playerName, int score)
 {
     if(scoreboardModel != NULL)
     {
-        qDebug() << "Adding " << score << " to " << playerName.toUtf8().constData();
+        //qDebug() << "Adding " << score << " to " << playerName.toUtf8().constData();
         scoreboardModel->addScore(playerName, score);
-        qDebug() << "Setting Table View Model";
+        //qDebug() << "Setting Table View Model";
         view.SetTableViewModel(scoreboardModel);
-        qDebug() << "Saving the Score";
+        //qDebug() << "Saving the Score";
         storeFilePath(puzzle->filePathRef);
     }
 
 }
-
+//////////////////////////////////////////////////////////////////////////////////
+// This function is called to enable and disable clues.
+//////////////////////////////////////////////////////////////////////////////////
 void MainController::onClues(){
     if (clueTimer) clueTimer = false;
     else clueTimer = true;
     view.clue->setChecked(clueTimer);
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+// This function is called to pick a random clue to be shown to user.
 //////////////////////////////////////////////////////////////////////////////////
 void MainController::giveClues(){
 
@@ -681,8 +594,6 @@ void MainController::giveClues(){
 //////////////////////////////////////////////////////////////////////////////////
 void MainController::onUndoMove(){
 
-    if(test) testfile << "MC31 ####################### MainController onUndoMove #######################\n";
-
     if (puzzle->undo.isEmpty()) return;
 
     Model::Move undoMove = puzzle->undo.pop();
@@ -698,7 +609,7 @@ void MainController::onUndoMove(){
     clearRedoStack = false;
     view.makeMove(moveArray);
     if(puzzle->undo.size() == 0){
-        if(test) testfile << "MC32 Puzzle undo stack size is 0\n";
+
         view.clearAction->setEnabled(false);
         view.undoAction->setEnabled(false);
     }
@@ -708,8 +619,6 @@ void MainController::onUndoMove(){
 // This function is called when the previous move needs to be redone.
 //////////////////////////////////////////////////////////////////////////////////
 void MainController::onRedoMove(){
-
-    if(test) testfile << "MC33 ####################### MainController onRedoMove #######################\n";
 
     if(puzzle->redo.isEmpty()) return;
 
@@ -727,7 +636,7 @@ void MainController::onRedoMove(){
     clearRedoStack = false;
     view.makeMove(moveArray);
     if(puzzle->redo.size() == 0){
-        if(test) testfile << "MC34 Puzzle redo stack size is 0\n";
+
         view.redoAction->setEnabled(false);
     }
 }
@@ -738,14 +647,18 @@ void MainController::onRedoMove(){
 //////////////////////////////////////////////////////////////////////////////////
 void MainController::onClear(){
 
-    if(test) testfile << "MC35 ####################### MainController onClear #######################\n";
+
 
     // Clear everything
     view.clearBoard();
     displayDefaultBoard();
 }
 
-bool MainController::checkIfUnsavedProgressAndReset()
+//////////////////////////////////////////////////////////////////////////////////
+// This function is called to check if there is unsaved progress and user
+// wants to start/load a new game.
+//////////////////////////////////////////////////////////////////////////////////
+void MainController::checkIfUnsavedProgressAndReset()
 {
     if(puzzle != NULL){
         //User started game, do they want to save progress?
@@ -759,6 +672,11 @@ bool MainController::checkIfUnsavedProgressAndReset()
         if(ret == msgBox.Save){
             //Save user progress
             onSavePuzzle();
+            clueTimer = false;
+            //qDebug() << "Setting Puzzle Time";
+            timerThread->setPuzzle(puzzle);
+            timerThread->paused = false;
+            timerThread->start();
         }
         else if(ret == msgBox.Discard){
             //Discard user progress
@@ -766,7 +684,7 @@ bool MainController::checkIfUnsavedProgressAndReset()
         }
         else if(ret == msgBox.Cancel){
             //Don't save or discard progress
-            return false;
+            return;
         }
 
         //User done saving/discarding game, clear board and delete puzzle
@@ -774,9 +692,11 @@ bool MainController::checkIfUnsavedProgressAndReset()
         delete puzzle;
 
     }
-    return true;
+    return;
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+// This function is called to validate that all moves are legal.
 //////////////////////////////////////////////////////////////////////////////////
 bool MainController::validateBoard(int value, int x, int y) {
     //rows and cols
@@ -806,31 +726,33 @@ bool MainController::validateBoard(int value, int x, int y) {
     return true;
 }
 
-//included as parameter for "quiet" saving so that
-//the user doesn't need to select the puzzle file in order
-//to update the scoreboard list
+//////////////////////////////////////////////////////////////////////////////////
+// This function is called to save the file path of the puzzle.
+//////////////////////////////////////////////////////////////////////////////////
 void MainController::storeFilePath(QString filePath)
 {
-    qDebug() << "Entering File Serialization";
+    //qDebug() << "Entering File Serialization";
     if(filePath == "")
     {
-        qDebug()<<"\tOpening File Dialog";
+        //qDebug()<<"\tOpening File Dialog";
         QFileDialog* fileDialog = new QFileDialog();
         filePath = fileDialog->getSaveFileName(&view, "Save file", "", "*.txt");
     }
+
+    //included as parameter for "quiet" saving so that
+    //the user doesn't need to select the puzzle file in order
+    //to update the scoreboard list
     else
     {
-        qDebug() << "Soft saving at: " << filePath.toUtf8().constData();
-        qDebug() << scoreboardModel->debug().toUtf8().constData();
+        //qDebug() << "Soft saving at: " << filePath.toUtf8().constData();
+        //qDebug() << scoreboardModel->debug().toUtf8().constData();
     }
 
     if(filePath != "")
     {
-        if(test) testfile << "MC23 FilePath is not empty\n";
         puzzleSerializer.serialize(puzzle, filePath);
     }
     else{
-        if(test) testfile << "MC24 Filepath was empty\n";
         //Popup error message...
         //TODO
     }

@@ -10,24 +10,23 @@
 #include "highgui.hpp"
 #include "imgproc/imgproc.hpp"
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
 
 using namespace Model;
 
+//////////////////////////////////////////////////////////////////////////////////
+// Constructor for ImagePuzzleGenerator
+//////////////////////////////////////////////////////////////////////////////////
 ImagePuzzleGenerator::ImagePuzzleGenerator()
 {
 }
 
-// comparison function object
-bool compareContourAreas ( std::vector<cv::Point> contour1, std::vector<cv::Point> contour2 ) {
-    double i = cv::contourArea(contour1);
-    double j = cv::contourArea(contour2);
-    return ( i < j );
-}
-
+//////////////////////////////////////////////////////////////////////////////////
+// This function tries to generates a puzzle from the given image. If there is
+// a problem generating a puzzle, NULL is returned.
+//////////////////////////////////////////////////////////////////////////////////
 Puzzle *ImagePuzzleGenerator::generate(QString filePath)
 {
     Puzzle *puzzle = new Puzzle();
@@ -38,6 +37,7 @@ Puzzle *ImagePuzzleGenerator::generate(QString filePath)
     if (api->Init("tesseract-ocr", "eng") == -1)
     {
         //TODO error handling
+        return NULL;
     }
 
     // Set to only recognize numbers
@@ -67,6 +67,11 @@ Puzzle *ImagePuzzleGenerator::generate(QString filePath)
 
     cv::findContours(canny, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
 
+    if(contours.size() == 0)
+        {
+            return NULL;
+        }
+
     for(int i = 0; i < contours.size(); i++)
     {
         double area = cv::contourArea(contours[i]);
@@ -88,6 +93,11 @@ Puzzle *ImagePuzzleGenerator::generate(QString filePath)
 
         cv::vector<cv::Point> approxContour;
         cv::approxPolyDP(contours[index], approxContour, 3, true);
+
+        if(approxContour.size() < 4)
+        {
+            return NULL;
+        }
 
         int topLeftIndex = 0;
         float distance = FLT_MAX;
@@ -187,15 +197,6 @@ Puzzle *ImagePuzzleGenerator::generate(QString filePath)
     srcCorners[2] = cv::Point(0,    size);
     srcCorners[3] = cv::Point(size, size);
 
-//    cv::Mat cornerCircles(src);
-
-//    cv::circle(cornerCircles, srcCorners[0], 5, 255/2, 5);
-//    cv::circle(cornerCircles, srcCorners[1], 5, 255/2, 5);
-//    cv::circle(cornerCircles, srcCorners[2], 5, 255/2, 5);
-//    cv::circle(cornerCircles, srcCorners[3], 5, 255/2, 5);
-
-//   // cv::imshow("2: Find corners", cornerCircles);
-
     cv::Mat newSrc(size, size, CV_8UC3);
 
     cv::Mat M( 2, 4, CV_32FC1 );
@@ -234,11 +235,20 @@ Puzzle *ImagePuzzleGenerator::generate(QString filePath)
 
     std::istringstream boxTextStream(boxtext);
 
+    if(boxTextStream == NULL)
+       {
+           return NULL;
+       }
+
     puzzle = new Puzzle();
+
+    int detectedValueCount = 0;
 
     //file << "Parsed box text...\n";
     while (!boxTextStream.eof())
     {
+       detectedValueCount++;
+
        int left, right, top, bottom, value, trash;
 
        boxTextStream >> value >> left >> bottom >> right >> top >> trash;
@@ -254,6 +264,11 @@ Puzzle *ImagePuzzleGenerator::generate(QString filePath)
        if((1 - (y1 - (int)y1)) < (y2 - (int)y2)) y1 = y2;
        puzzle->defaultBoard[(int)x1][8 - (int)y1] = value;
     }
+
+    if(detectedValueCount == 0 || detectedValueCount > 81)
+        {
+            return NULL;
+        }
 
     //TODO fix this
     int** ConvertedBoard = new int*[9];

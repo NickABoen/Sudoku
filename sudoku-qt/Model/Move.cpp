@@ -8,7 +8,6 @@ using namespace Model;
 //////////////////////////////////////////////////////////////////////////////////
 Move::Move(int x, int y, int value) {
 
-    if(test) testfile << "Mo1  ####################### Move constructor #######################\n";
 
     this->x = x;
     this->y = y;
@@ -19,6 +18,5 @@ Move::Move(int x, int y, int value) {
 // Destructor for Move
 //////////////////////////////////////////////////////////////////////////////////
 Move::~Move(){
-    if(test) testfile << "Mo2  ####################### Move destructor #######################\n";
 }
 
