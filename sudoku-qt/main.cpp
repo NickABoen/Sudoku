@@ -9,7 +9,6 @@
 int main(int argc, char *argv[])
 {
     if(test) testfile << "Ma1 ####################### Main #######################\n";
-
     // Create QApplication and execute MainController
     QApplication a(argc, argv);
     Controller::MainController controller;

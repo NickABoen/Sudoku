@@ -6,6 +6,9 @@
 #include <QKeyEvent>
 #include <QMessageBox>
 #include <QShortcut>
+#include <QApplication>
+#include <QTableView>
+#include <QSortFilterProxyModel>
 
 using namespace View;
 
@@ -49,11 +52,20 @@ MainWindow::MainWindow(QWidget *parent) :
             connect(field, SIGNAL(focused(bool)),this,SLOT(focusChanged(bool)));
             connect(field, SIGNAL(moveLeft()), this, SLOT(moveLeft()));
             connect(field, SIGNAL(moveRight()), this, SLOT(moveRight()));
+            connect(field, SIGNAL(shortcutAddNote()), this, SLOT(shortcutAddNote()));
         }
     }
     focusedField[0] = 0;
     focusedField[1] = 0;
-    enableNotes = false;
+    notesEnabled = false;
+    validationEnabled = false;
+    originalSize = this->getWindowSize();
+    scoreboardSize = new QSize(originalSize.width() * 2, originalSize.height());
+
+    scoreboardView = new QTableView(this);
+    scoreboardView->move(originalSize.width() + pad, (2 * pad));
+    scoreboardView->resize(originalSize.width() - (2 * pad), originalSize.height()- (3 * pad));
+    scoreboardView->hide();
 
     QFrame *line0 = new QFrame(ui->centralWidget);
     line0->setFrameShape(QFrame::HLine);
@@ -82,6 +94,7 @@ MainWindow::MainWindow(QWidget *parent) :
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_U), this, SIGNAL(onUndoPressed()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R), this, SIGNAL(onRedoPressed()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_E), this, SIGNAL(onEnableNotesPressed()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this, SIGNAL(onScoreBoardPressed()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this, SIGNAL(onCluePressed()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_T), this, SIGNAL(onHintPressed()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_G), this, SIGNAL(onGenerateBoardPressed()));
@@ -95,6 +108,12 @@ MainWindow::~MainWindow()
 {
     //buttons are deleted when ui is deleted since it is parent, see Qt documentation
     delete ui;
+    delete scoreboardView;
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    emit(closeThread());
+    QMainWindow::closeEvent(event);
 }
 
 void MainWindow::fieldChanged(QString text)
@@ -176,6 +195,16 @@ void MainWindow::fieldFocused() {
     }
 }
 
+void MainWindow::shortcutAddNote() {
+    if (isNotesEnabled()) {
+        QLabel *label = labels[focusedField[0]][focusedField[1]];
+
+        QString result = QInputDialog::getText(0, "Add Note", "Value:", FocusLineEdit::Normal, label->text());
+
+        label->setText(result);
+    }
+}
+
 void MainWindow::setMove(int* moveArray, bool isCurrent){
     int value = moveArray[0];
     int x = moveArray[1];
@@ -239,10 +268,17 @@ bool MainWindow::isFieldEnabled(int i, int j) {
 bool MainWindow::isNotesEnabled() {
     return notesEnabled;
 }
+bool MainWindow::isValidationEnabled() {
+    return validationEnabled;
+}
 
 void MainWindow::setNotesEnabled(bool enabled) {
     notesEnabled = enabled;
 }
+void MainWindow::setValidationEnabled(bool enabled) {
+    validationEnabled = enabled;
+}
+
 void MainWindow::changeColor(int x, int y)
 {
     fields[x][y]->setStyleSheet("QLineEdit{color: white; background: red;font: 28pt;}");
@@ -252,6 +288,40 @@ void MainWindow::resetColor(int x, int y)
     //fields[x][y]->setStyleSheet("QLineEdit{color: black; background: white;font: 28pt;}");
     fields[x][y]->setStyleSheet("");
     fields[x][y]->setStyleSheet("QLineEdit{font: 28pt;}");
+}
+
+QSize MainWindow::getWindowSize()
+{
+    return this->size();
+}
+
+void MainWindow::setWindowSize(QSize newSize)
+{
+    if(newSize.width() > this->maximumWidth())
+        newSize.setWidth(this->maximumWidth() - 1);
+    if(newSize.height() > this->maximumHeight())
+        newSize.setHeight(this->maximumHeight() - 1);
+
+    this->resize(newSize);
+}
+
+void MainWindow::DisableScoreboardView()
+{
+    this->setWindowSize(originalSize);
+    scoreboardView->hide();
+}
+
+void MainWindow::EnableScoreboardView(QAbstractItemModel * model)
+{
+    this->setWindowSize(*scoreboardSize);
+    this->SetTableViewModel(model);
+    scoreboardView->show();
+}
+
+void MainWindow::SetTableViewModel(QAbstractItemModel * model)
+{
+    scoreboardView->setModel(model);
+    scoreboardView->sortByColumn(1);
 }
 
 void MainWindow::createMenu()
@@ -308,10 +378,21 @@ void MainWindow::createMenu()
         enableNotes->setCheckable(true);
         connect(enableNotes, SIGNAL(triggered()), this, SIGNAL(onEnableNotesPressed()));
 
+        scoreBoard = settingsMenu->addAction("Toggle Scoreboard");
+        scoreBoard->setEnabled(true);
+        scoreBoard->setCheckable(true);
+        connect(scoreBoard, SIGNAL(triggered()), this, SIGNAL(onScoreBoardPressed()));
+
         clue = settingsMenu->addAction("Enable Clues\tCtrl+L");
         clue->setEnabled(true);
         clue->setCheckable(true);
         connect(clue, SIGNAL(triggered()), this, SIGNAL(onCluePressed()));
+
+        enableValidation = settingsMenu->addAction("Enable Validation\tCtrl+V");
+        enableValidation->setEnabled(true);
+        enableValidation->setCheckable(true);
+        connect(enableValidation, SIGNAL(triggered()), this, SIGNAL(onEnableValidationPressed()));
     }
+
 }
 

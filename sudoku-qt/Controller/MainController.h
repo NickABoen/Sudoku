@@ -14,6 +14,7 @@
 #include "mainwindow.h"
 #include "difficultyselector.h"
 #include "gametimer.h"
+#include "ScoreboardTableModel.h"
 
 namespace Controller{
 
@@ -38,6 +39,8 @@ namespace Controller{
         void onClear();
         void onHint();
         void onEnableNotes();
+        void onEnableValidation();
+        void onToggleScoreBoard();
         void onClues();
         void giveClues();
         void endThread();
@@ -49,15 +52,21 @@ namespace Controller{
         void displayDefaultBoard();
         void displayCurrentBoard();
         bool checkIfUnsavedProgressAndReset();
+        void InitializeScoreBoard();
+        void addScore(QString playerName, int score);
         bool clueTimer;
+        bool validationEnabled;
+        bool scoreboardEnabled;
         QTimer *ctimer;
 
         Model::Puzzle* puzzle;
         Model::CurrentProgressSerializer currentProgressSerializer;
         Model::PuzzleSerializer puzzleSerializer;
         View::MainWindow view;
-        void storeFilePath();
+        void storeFilePath(QString filePath = "");
+        bool validateBoard(int value, int x, int y);
         Model::GameTimer *timerThread;
+        Model::ScoreboardTableModel *scoreboardModel;
     };
 
 }

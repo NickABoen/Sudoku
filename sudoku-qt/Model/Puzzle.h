@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QStack>
+#include <QList>
+#include <QPair>
 
 #include "Move.h"
 
@@ -26,6 +28,8 @@ namespace Model{
 
         QStack<Model::Move> undo;
         QStack<Model::Move> redo;
+        QList<QPair<QString,int>> scoreboardList;
+
     };
 
 }

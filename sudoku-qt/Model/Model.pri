@@ -5,23 +5,25 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = sudoku-qt
 TEMPLATE = app
 
-SOURCES += Model/CurrentProgressSerializer.cpp\
-           Model/Move.cpp\
-           Model/Puzzle.cpp\
+SOURCES += Model/CurrentProgressSerializer.cpp \
+           Model/Move.cpp \
+           Model/Puzzle.cpp \
            Model/PuzzleSerializer.cpp\
            Model/Boardsolver.cpp \
            Model/PriorityQueue.cpp \
            Model/BoardGenerator.cpp \
            Model/gametimer.cpp \
-           Model/ImagePuzzleGenerator.cpp
+           Model/ImagePuzzleGenerator.cpp \
+           Model/ScoreboardTableModel.cpp
 
-
-HEADERS += Model/CurrentProgressSerializer.h\
-           Model/Move.h\
-           Model/Puzzle.h\
+HEADERS += Model/CurrentProgressSerializer.h \
+           Model/Move.h \
+           Model/Puzzle.h \
            Model/PuzzleSerializer.h \
            Model/BoardSolver.h \
            Model/PriorityQueue.h \
            Model/BoardGenerator.h \
            Model/gametimer.h \
-           Model/ImagePuzzleGenerator.h
+           Model/ImagePuzzleGenerator.h \
+           Model/ScoreboardTableModel.h
+

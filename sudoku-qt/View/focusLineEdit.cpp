@@ -31,6 +31,9 @@ void FocusLineEdit::keyPressEvent(QKeyEvent *e)
     case Qt::Key_Right:
         emit(moveRight());
         break;
+    case Qt::Key_Space:
+        emit(shortcutAddNote());
+        break;
     default:
         QLineEdit::keyPressEvent(e);
     }
